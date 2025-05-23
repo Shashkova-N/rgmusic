@@ -1,0 +1,126 @@
+.header {
+  background: linear-gradient(90deg, #3a0ca3 0%, #7209b7 100%);
+  color: #fff;
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+
+    &-icon {
+      height: 40px;
+      margin-right: 0.5rem;
+    }
+
+    &-text {
+      font-size: 1.25rem;
+      font-weight: bold;
+      text-transform: lowercase;
+    }
+  }
+
+  &__links {
+    display: flex;
+    gap: 2rem;
+
+    .header__link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1rem;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__icon-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+    font-size: 1.3rem;
+    padding: 0.25rem;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  &__cart-btn {
+    text-decoration: none;
+
+    .header__badge {
+      position: absolute;
+      top: -4px;
+      right: -6px;
+      background: #ff3c38;
+      color: #fff;
+      border-radius: 50%;
+      padding: 0 5px;
+      font-size: 0.7rem;
+      line-height: 1.2;
+    }
+  }
+
+  &__user {
+    position: relative;
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #fff;
+    color: #000;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    list-style: none;
+    padding: 0.5rem 0;
+    min-width: 160px;
+    z-index: 1000;
+
+    &-item {
+      padding: 0;
+      margin: 0;
+      & + & {
+        margin-top: 0.25rem;
+      }
+
+      a,
+      button {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        text-align: left;
+        background: none;
+        border: none;
+        color: inherit;
+        font-size: 0.95rem;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+          background: #f2f2f2;
+        }
+      }
+    }
+  }
+}

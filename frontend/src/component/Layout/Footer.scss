@@ -1,0 +1,50 @@
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(90deg, #7c2370 0%, #3e1741 100%);
+  color: #fff;
+  padding: 40px 20px;
+  text-align: center;
+  z-index: 1000; // чтобы футер был поверх остального
+
+  &__social {
+    margin-bottom: 20px;
+
+    .footer__icon {
+      display: inline-block;
+      margin: 0 10px;
+      font-size: 24px;
+      color: #fff;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 0.7;
+      }
+    }
+  }
+
+  &__nav {
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    padding-top: 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+
+    a {
+      margin: 0 15px;
+      color: #fff;
+      text-decoration: none;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 0.7;
+      }
+    }
+  }
+
+  &__copy {
+    font-size: 12px;
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,30 @@
+.track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.track-vk {
+  width: 100px;
+}
+
+.track-duration {
+  width: 60px;
+}
+
+.track-price {
+  width: 80px;
+}
+
+.track-buttons button {
+  margin-right: 6px;
+}
