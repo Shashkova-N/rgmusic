@@ -25,9 +25,20 @@ services:
       - "5001:5001"
     depends_on:
       - track_db
-    command: sh -c "while ! nc -z track_db 5432; do sleep 1; done; python app.py"
+    command: sh -c "while ! nc -z track_db 5432; do sleep 1; done; flask run --host=0.0.0.0 --port=5001"
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: app.py
     volumes:
+      - ./track_service:/app
+      - ./track_service/media:/app/media
       - ./track_service/migrations:/app/migrations
+    # depends_on:
+    #   - track_db
+    # command: sh -c "while ! nc -z track_db 5432; do sleep 1; done; python app.py"
+    # volumes:
+    #   - ./track_service/migrations:/app/migrations
+    #   - ./track_service/media:/app/media
   track_db:
     image: postgres:13
     environment:

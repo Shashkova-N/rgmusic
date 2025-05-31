@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, send_from_directory, current_app
 import os
 from models import db, Track
+from datetime import datetime
+from werkzeug.utils import secure_filename
 
 track_bp = Blueprint('tracks', __name__, url_prefix='/tracks')
 
@@ -48,8 +50,8 @@ def get_tracks():
             'duration': t.duration,
             'price': t.price,
             'file_watermarked': t.file_watermarked,
-            # ты можешь добавить сюда прямой URL:
-            'file_url': f'/tracks/media/{t.file_watermarked}' if t.file_watermarked else None
+            # Исправленный URL — теперь он указывает на /media/watermarked/
+            'file_url': f'/media/watermarked/{t.file_watermarked}' if t.file_watermarked else None
         } for t in tracks],
         'total_count': total_count,
         'offset': offset,
@@ -81,7 +83,139 @@ def get_track_filters():
     })
 
 
-@track_bp.route('/media/<path:filename>', methods=['GET'])
-def serve_media(filename):
-    media_dir = os.path.abspath(os.path.join(current_app.root_path, '..', 'media'))
-    return send_from_directory(media_dir, filename)
+# # Теперь сервер отдаёт файлы из media/watermarked
+# @track_bp.route('/media/watermarked/<path:filename>', methods=['GET'])
+# def serve_watermarked(filename):
+#     wm_dir = os.path.abspath(os.path.join(current_app.root_path, '..', 'media', 'watermarked'))
+#     print("Serving from:", wm_dir)
+#     return send_from_directory(wm_dir, filename)
+
+@track_bp.route('/media/watermarked/<path:filename>', methods=['GET'])
+def serve_watermarked(filename):
+    wm_dir = os.path.abspath('media/watermarked')
+    print("Serving from:", wm_dir)
+    return send_from_directory(wm_dir, filename)
+
+
+# Если нужно — можно добавить и для clean:
+@track_bp.route('/media/clean/<path:filename>', methods=['GET'])
+def serve_clean(filename):
+    clean_dir = os.path.abspath(os.path.join(current_app.root_path, '..', 'media', 'clean'))
+    return send_from_directory(clean_dir, filename)
+
+
+@track_bp.route('/admin', methods=['GET'])
+def get_all_tracks_admin():
+    """
+    Отдаёт полный список треков со всеми полями (кроме id),
+    чтобы админка могла отобразить/редактировать любую информацию.
+    """
+    tracks = Track.query.all()
+    result = []
+    for t in tracks:
+        result.append({
+            'id': t.id,
+            'title': t.title,
+            'artist': t.artist,
+            'genre': t.genre,
+            'tempo': t.tempo,
+            'voice': t.voice,
+            'duration': t.duration,
+            'language': t.language,
+            'composer': t.composer,
+            'poet': t.poet,
+            'studio': t.studio,
+            'price': t.price,
+            'vk_number': t.vk_number,
+            'file_clean': t.file_clean,
+            'file_watermarked': t.file_watermarked,
+            'is_visible': t.is_visible,
+            'upload_date': t.upload_date.isoformat() if isinstance(t.upload_date, datetime) else t.upload_date,
+        })
+    return jsonify(result), 200
+
+
+@track_bp.route('/admin', methods=['POST'])
+def create_track_admin():
+    try:
+        # Получаем данные формы
+        form = request.form
+        title = form['title']
+        artist = form['artist']
+        genre = form.get('genre')
+        tempo = form.get('tempo')
+        voice = form.get('voice')
+        duration = int(form.get('duration', 0))
+        language = form.get('language')
+        composer = form.get('composer')
+        poet = form.get('poet')
+        studio = form.get('studio')
+        price = float(form['price'])
+        vk_number = form.get('vk_number')
+        is_visible = form.get('is_visible', 'true').lower() in ('1', 'true', 'yes')
+
+        # Получаем файлы
+        file_clean = request.files.get('file_clean')
+        file_wm = request.files.get('file_watermarked')
+
+        if not file_clean or not file_clean.filename:
+            return jsonify({"error": "Не передан оригинальный файл (clean)"}), 400
+
+        if not file_wm or not file_wm.filename:
+            return jsonify({"error": "Не передан водяной знак (watermarked)"}), 400
+
+        # Определяем путь к медиа
+        base = os.path.abspath('media')  # <-- сохраняем в текущую директорию, чтобы совпадало с volume
+        clean_dir = os.path.join(base, 'clean')
+        wm_dir = os.path.join(base, 'watermarked')
+
+        os.makedirs(clean_dir, exist_ok=True)
+        os.makedirs(wm_dir, exist_ok=True)
+
+        # Безопасные имена
+        filename_clean = secure_filename(file_clean.filename)
+        filename_wm = secure_filename(file_wm.filename)
+
+        # Пути для сохранения
+        clean_path = os.path.join(clean_dir, filename_clean)
+        wm_path = os.path.join(wm_dir, filename_wm)
+
+        # Сохраняем файлы
+        file_clean.save(clean_path)
+        file_wm.save(wm_path)
+
+        # Создаём запись в БД
+        new_track = Track(
+            title=title,
+            artist=artist,
+            genre=genre,
+            tempo=tempo,
+            voice=voice,
+            duration=duration,
+            language=language,
+            composer=composer,
+            poet=poet,
+            studio=studio,
+            price=price,
+            vk_number=vk_number,
+            file_clean=filename_clean,
+            file_watermarked=filename_wm,
+            is_visible=is_visible,
+            upload_date=datetime.utcnow()
+        )
+
+        db.session.add(new_track)
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Трек успешно создан',
+            'track': {
+                'id': new_track.id,
+                'title': new_track.title
+            }
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print("Ошибка при создании трека:", str(e))
+        return jsonify({"error": "Ошибка сервера", "details": str(e)}), 500

@@ -6,6 +6,6 @@ COPY requirements.txt .
 RUN apt-get update && apt-get install -y netcat-traditional
 RUN pip install -r requirements.txt
 
-COPY . .
+# COPY . .
 
 CMD ["python", "app.py"]

@@ -1,13 +1,11 @@
 .footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
+  margin-top: auto;
   width: 100%;
+  max-width: 100%;
   background: linear-gradient(90deg, #7c2370 0%, #3e1741 100%);
   color: #fff;
-  padding: 40px 20px;
+  padding: 10px;
   text-align: center;
-  z-index: 1000; // чтобы футер был поверх остального
 
   &__social {
     margin-bottom: 20px;

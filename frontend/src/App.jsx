@@ -10,8 +10,9 @@ import { Profile } from './component/Layout/PersonalAccount/Profile';
 import { EditProfile } from './component/Layout/PersonalAccount/EditProfile';
 import { PlaylistPage } from './component/Page/PlaylistPage/PlaylistPage';
 
-// Импортируем ваш layout для админки
-import { AdminPanel } from './component/Page/AdminPanel';
+import { AdminPanel } from './component/Admin/AdminPanel/AdminPanel';
+import { TracksPage } from './component/Admin/Pages/Tracks/TracksPage';
+import { AddTrackPage } from './component/Admin/Pages/AddTrack/AddTrackPage';
 
 import './scss/style.scss';
 
@@ -41,14 +42,15 @@ function App() {
 
             {/* Админская часть */}
             <Route element={<RequireAuth allowedRoles={[ROLES.Admin]} />}>
-              {/* AdminPanel выступает лэйаутом для всех /admin-страниц */}
               <Route path="admin" element={<AdminPanel />}>
-                {/* Пока что просто индексная страница */}
-                {/* В будущем можно добавить:
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="tracks" element={<AdminTracks />} />
-                    <Route path="users" element={<AdminUsers />} />
-                    и т.д.
+                {/* при заходе на /admin или /admin/tracks показываем список треков */}
+                <Route index element={<TracksPage />} />
+                <Route path="tracks" element={<TracksPage />} />
+
+                <Route path="tracks/new" element={<AddTrackPage />} />
+                {/* в будущем: 
+                  <Route path="tracks/new" element={<AddTrackPage />} />
+                  <Route path="users" element={<UsersPage />} />
                 */}
               </Route>
             </Route>

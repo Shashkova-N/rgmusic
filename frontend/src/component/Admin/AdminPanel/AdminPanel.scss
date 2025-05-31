@@ -1,0 +1,12 @@
+.admin-panel {
+  display: flex;
+  height: 95vh;
+}
+
+.admin-panel__content {
+  flex: 1;
+  background-color: #f9f9f9;
+  overflow-y: auto;
+  padding: 2rem;
+  box-sizing: border-box;
+}

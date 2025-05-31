@@ -56,7 +56,7 @@ export function Header() {
 
           {/* Панель администратора */}
           {role === 'admin' && (
-            <Link to="/admin" className="header__icon-btn" aria-label="Админ-панель" title="Админ-панель">
+            <Link to="/admin/tracks" className="header__icon-btn" aria-label="Админ-панель" title="Админ-панель">
               ⚙️
             </Link>
           )}
