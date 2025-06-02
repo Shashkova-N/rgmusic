@@ -1,4 +1,4 @@
-.add-track-page {
+.track-form {
   padding: 1rem;
 
   h1 {
@@ -41,6 +41,15 @@
     font-size: 1rem;
     background-color: #4caf50;
     color: white;
+
+    &:hover {
+      background-color: #43a047;
+    }
+
+    &[disabled] {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
   }
 
   &__error {

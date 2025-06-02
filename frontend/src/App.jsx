@@ -13,6 +13,10 @@ import { PlaylistPage } from './component/Page/PlaylistPage/PlaylistPage';
 import { AdminPanel } from './component/Admin/AdminPanel/AdminPanel';
 import { TracksPage } from './component/Admin/Pages/Tracks/TracksPage';
 import { AddTrackPage } from './component/Admin/Pages/AddTrack/AddTrackPage';
+import { EditTrackPage } from './component/Admin/Pages/EditTrack/EditTrackPage';
+import { PriceUpdate } from './component/Admin/Pages/PriceUpdate/PriceUpdate';
+import { PlaylistsPage } from './component/Admin/Pages/PlaylistsPage/PlaylistsPage';
+import { AddPlaylist } from './component/Admin/Pages/AddPlaylist/AddPlaylist';
 
 import './scss/style.scss';
 
@@ -48,10 +52,18 @@ function App() {
                 <Route path="tracks" element={<TracksPage />} />
 
                 <Route path="tracks/new" element={<AddTrackPage />} />
-                {/* в будущем: 
-                  <Route path="tracks/new" element={<AddTrackPage />} />
-                  <Route path="users" element={<UsersPage />} />
-                */}
+
+                <Route path="tracks/:id/edit" element={<EditTrackPage />} />
+
+                <Route path="tracks/price-update" element={<PriceUpdate />} />
+
+                <Route path="playlists">
+                  <Route index element={<PlaylistsPage />} />
+                  <Route path="new" element={<AddPlaylist />} />
+                  {/* <Route path="new" element={<AddPlaylistPage />} />
+                  <Route path=":id/edit" element={<EditPlaylistPage />} /> */}
+                </Route>
+
               </Route>
             </Route>
 

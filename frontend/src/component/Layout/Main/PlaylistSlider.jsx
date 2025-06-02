@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PlaylistCard } from '../../Shared/PlaylistCard/PlaylistCard';
 import './PlaylistSlider.scss';
 
 export function PlaylistSlider() {
@@ -11,13 +12,13 @@ export function PlaylistSlider() {
     const fetchPlaylists = async () => {
       try {
         const res = await fetch('http://localhost:5001/playlists');
-        const data = await res.json();
-
         if (!res.ok) {
-          setError(data.error || 'Ошибка загрузки плейлистов');
+          const errData = await res.json();
+          setError(errData.error || 'Ошибка загрузки плейлистов');
           return;
         }
 
+        const data = await res.json();
         setPlaylists(data);
       } catch (err) {
         setError('Ошибка соединения с сервером');
@@ -39,16 +40,16 @@ export function PlaylistSlider() {
 
       <div className="playlist-container">
         {playlists.map(playlist => (
-          <div
-            className="playlist-tile"
+          <PlaylistCard
             key={playlist.id}
+            playlist={{
+              ...playlist,
+              track_count: playlist.track_count || 0,
+              views: playlist.views || 0
+            }}
+            showEdit={false}
             onClick={() => goToPlaylist(playlist.id)}
-          >
-            <div className="playlist-cover">
-              <span>{playlist.name}</span>
-            </div>
-            <div className="playlist-count">{playlist.track_count} треков</div>
-          </div>
+          />
         ))}
       </div>
 

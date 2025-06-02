@@ -3,6 +3,7 @@ import os
 from models import db, Track
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import traceback
 
 track_bp = Blueprint('tracks', __name__, url_prefix='/tracks')
 
@@ -107,31 +108,37 @@ def serve_clean(filename):
 @track_bp.route('/admin', methods=['GET'])
 def get_all_tracks_admin():
     """
-    Отдаёт полный список треков со всеми полями (кроме id),
-    чтобы админка могла отобразить/редактировать любую информацию.
+    Получаем все треки (для админки)
+    Можно фильтровать по цене: /tracks/admin?price=100
     """
-    tracks = Track.query.all()
-    result = []
-    for t in tracks:
-        result.append({
-            'id': t.id,
-            'title': t.title,
-            'artist': t.artist,
-            'genre': t.genre,
-            'tempo': t.tempo,
-            'voice': t.voice,
-            'duration': t.duration,
-            'language': t.language,
-            'composer': t.composer,
-            'poet': t.poet,
-            'studio': t.studio,
-            'price': t.price,
-            'vk_number': t.vk_number,
-            'file_clean': t.file_clean,
-            'file_watermarked': t.file_watermarked,
-            'is_visible': t.is_visible,
-            'upload_date': t.upload_date.isoformat() if isinstance(t.upload_date, datetime) else t.upload_date,
-        })
+    query = Track.query
+
+    # Фильтр по цене (если передан)
+    price_filter = request.args.get('price', type=float)
+    if price_filter:
+        query = query.filter(Track.price == price_filter)
+
+    tracks = query.all()
+    result = [{
+        'id': t.id,
+        'title': t.title,
+        'artist': t.artist,
+        'genre': t.genre,
+        'tempo': t.tempo,
+        'voice': t.voice,
+        'duration': t.duration,
+        'language': t.language,
+        'composer': t.composer,
+        'poet': t.poet,
+        'studio': t.studio,
+        'price': t.price,
+        'vk_number': t.vk_number,
+        'file_clean': t.file_clean,
+        'file_watermarked': t.file_watermarked,
+        'is_visible': t.is_visible,
+        'upload_date': t.upload_date.isoformat() if t.upload_date else None
+    } for t in tracks]
+
     return jsonify(result), 200
 
 
@@ -140,19 +147,35 @@ def create_track_admin():
     try:
         # Получаем данные формы
         form = request.form
-        title = form['title']
-        artist = form['artist']
+        title = form.get('title')
+        artist = form.get('artist')
         genre = form.get('genre')
         tempo = form.get('tempo')
         voice = form.get('voice')
-        duration = int(form.get('duration', 0))
         language = form.get('language')
         composer = form.get('composer')
         poet = form.get('poet')
         studio = form.get('studio')
-        price = float(form['price'])
         vk_number = form.get('vk_number')
         is_visible = form.get('is_visible', 'true').lower() in ('1', 'true', 'yes')
+
+        # Проверка обязательных полей
+        if not title:
+            return jsonify({"error": "Не указано название трека"}), 400
+        if not artist:
+            return jsonify({"error": "Не указан исполнитель"}), 400
+
+        # Обработка duration
+        try:
+            duration = int(form.get('duration', 0))
+        except ValueError:
+            return jsonify({"error": "Длительность трека должна быть числом"}), 400
+
+        # Обработка цены
+        try:
+            price = float(form.get('price', ''))
+        except (ValueError, TypeError):
+            return jsonify({"error": "Некорректная цена"}), 400
 
         # Получаем файлы
         file_clean = request.files.get('file_clean')
@@ -164,27 +187,20 @@ def create_track_admin():
         if not file_wm or not file_wm.filename:
             return jsonify({"error": "Не передан водяной знак (watermarked)"}), 400
 
-        # Определяем путь к медиа
-        base = os.path.abspath('media')  # <-- сохраняем в текущую директорию, чтобы совпадало с volume
+        # Определяем пути к медиа
+        base = os.path.abspath('media')
         clean_dir = os.path.join(base, 'clean')
         wm_dir = os.path.join(base, 'watermarked')
-
         os.makedirs(clean_dir, exist_ok=True)
         os.makedirs(wm_dir, exist_ok=True)
 
-        # Безопасные имена
+        # Сохраняем файлы
         filename_clean = secure_filename(file_clean.filename)
         filename_wm = secure_filename(file_wm.filename)
+        file_clean.save(os.path.join(clean_dir, filename_clean))
+        file_wm.save(os.path.join(wm_dir, filename_wm))
 
-        # Пути для сохранения
-        clean_path = os.path.join(clean_dir, filename_clean)
-        wm_path = os.path.join(wm_dir, filename_wm)
-
-        # Сохраняем файлы
-        file_clean.save(clean_path)
-        file_wm.save(wm_path)
-
-        # Создаём запись в БД
+        # Создаём запись
         new_track = Track(
             title=title,
             artist=artist,
@@ -217,5 +233,140 @@ def create_track_admin():
 
     except Exception as e:
         db.session.rollback()
-        print("Ошибка при создании трека:", str(e))
+        traceback.print_exc()  # Печатает полный traceback в консоль
         return jsonify({"error": "Ошибка сервера", "details": str(e)}), 500
+    
+
+@track_bp.route('/admin/<int:id>', methods=['GET'])
+def get_track_by_id(id):
+    track = Track.query.get(id)
+    if not track:
+        return jsonify({"error": "Трек не найден"}), 404
+
+    return jsonify({
+        'id': track.id,
+        'title': track.title,
+        'artist': track.artist,
+        'genre': track.genre,
+        'tempo': track.tempo,
+        'voice': track.voice,
+        'duration': track.duration,
+        'language': track.language,
+        'composer': track.composer,
+        'poet': track.poet,
+        'studio': track.studio,
+        'price': track.price,
+        'vk_number': track.vk_number,
+        'file_clean': track.file_clean,
+        'file_watermarked': track.file_watermarked,
+        'is_visible': track.is_visible,
+        'upload_date': track.upload_date.isoformat() if track.upload_date else None
+    }), 200
+
+
+@track_bp.route('/admin/<int:id>', methods=['PUT'])
+def update_track(id):
+    # Проверяем, существует ли трек
+    track = Track.query.get(id)
+    if not track:
+        return jsonify({"error": "Трек не найден"}), 404
+
+    form = request.form
+    title     = form.get('title')
+    artist    = form.get('artist')
+    genre     = form.get('genre')
+    tempo     = form.get('tempo')
+    voice     = form.get('voice')
+    duration  = form.get('duration', type=int)
+    language  = form.get('language')
+    composer  = form.get('composer')
+    poet      = form.get('poet')
+    studio    = form.get('studio')
+    price     = form.get('price', type=float)
+    vk_number = form.get('vk_number')
+    is_visible = form.get('is_visible', 'true').lower() in ('1','true','yes')
+
+    # Получаем новые файлы, если они переданы
+    file_clean = request.files.get('file_clean')
+    file_wm = request.files.get('file_watermarked')
+
+    # Обновляем поля
+    if title: track.title = title
+    if artist: track.artist = artist
+    if genre: track.genre = genre
+    if tempo: track.tempo = tempo
+    if voice: track.voice = voice
+    if duration: track.duration = duration
+    if language: track.language = language
+    if composer: track.composer = composer
+    if poet: track.poet = poet
+    if studio: track.studio = studio
+    if price: track.price = price
+    if vk_number: track.vk_number = vk_number
+    track.is_visible = is_visible
+
+    base = os.path.abspath('media')
+    clean_dir = os.path.join(base, 'clean')
+    wm_dir = os.path.join(base, 'watermarked')
+    os.makedirs(clean_dir, exist_ok=True)
+    os.makedirs(wm_dir, exist_ok=True)
+
+    # Сохраняем новые файлы (если загружены)
+    if file_clean:
+        filename_clean = secure_filename(file_clean.filename)
+        clean_path = os.path.join(clean_dir, filename_clean)
+        file_clean.save(clean_path)
+        track.file_clean = filename_clean
+
+    if file_wm:
+        filename_wm = secure_filename(file_wm.filename)
+        wm_path = os.path.join(wm_dir, filename_wm)
+        file_wm.save(wm_path)
+        track.file_watermarked = filename_wm
+
+    # Сохраняем изменения в БД
+    try:
+        db.session.commit()
+        return jsonify({
+            "message": "Трек успешно обновлён",
+            "track": {
+                "id": track.id,
+                "title": track.title,
+                "artist": track.artist,
+                "is_visible": track.is_visible
+            }
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        print("Ошибка при обновлении трека:", str(e))
+        return jsonify({"error": "Не удалось обновить трек", "details": str(e)}), 500
+    
+
+@track_bp.route('/admin/update-price', methods=['PUT'])
+def update_tracks_price():
+    data = request.get_json()
+    track_ids = data.get('track_ids')
+    new_price = data.get('new_price')
+
+    if not isinstance(track_ids, list) or not new_price:
+        return jsonify({"error": "Нужно указать массив track_ids и новую цену"}), 400
+
+    try:
+        tracks = Track.query.filter(Track.id.in_(track_ids)).all()
+
+        for track in tracks:
+            track.price = new_price
+
+        db.session.commit()
+
+        return jsonify({
+            "message": f"Цена обновлена для {len(tracks)} треков",
+            "updated_count": len(tracks),
+            "track_ids": track_ids,
+            "new_price": new_price
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print("Ошибка при массовом обновлении цен:", str(e))
+        return jsonify({"error": "Не удалось обновить цены", "details": str(e)}), 500

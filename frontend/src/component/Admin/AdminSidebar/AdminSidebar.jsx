@@ -17,7 +17,11 @@ export function AdminSidebar({ onLogout }) {
           <i className="icon-add-track" />
           <span>Добавить трек</span>
         </NavLink>
-        <NavLink to="/admin/albums" className="admin-panel__menu-item">
+        <NavLink to="/admin/tracks/price-update" className="admin-panel__menu-item">
+          <i className="icon-settings" />
+          <span>Изменить цены</span>
+        </NavLink>
+        <NavLink to="/admin/playlists" className="admin-panel__menu-item">
           <i className="icon-albums" />
           <span>Альбомы</span>
         </NavLink>

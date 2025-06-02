@@ -32,6 +32,7 @@ services:
     volumes:
       - ./track_service:/app
       - ./track_service/media:/app/media
+      - ./track_service/media/playlist_images:/app/media/playlist_images
       - ./track_service/migrations:/app/migrations
     # depends_on:
     #   - track_db
