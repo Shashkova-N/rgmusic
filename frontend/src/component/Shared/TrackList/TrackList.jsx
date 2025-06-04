@@ -1,15 +1,42 @@
-// frontend/src/component/Shared/TrackList/TrackList.jsx
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
+import { AuthContext } from '../../../context/AuthProvider';
 import './TrackList.scss';
+import { v4 as uuidv4 } from 'uuid';
+import { cartApi } from '../../../api/apiClient'; // ✅ импорт cartApi
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_TRACK_API; // 🔄 используем трек-сервис явно
 
 export function TrackList({ tracks }) {
   const [currentTrackId, setCurrentTrackId] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(new Audio());
 
-  // Задаём обработчик окончания трека
+  const { userId } = useContext(AuthContext);
+
+  // const [sessionId, setSessionId] = useState(() => {
+  //   const existing = localStorage.getItem('guest_session_id'); // ✅ заменили
+  //   if (existing) return existing;
+  //   const newId = uuidv4();
+  //   localStorage.setItem('guest_session_id', newId); // ✅ заменили
+  //   return newId;
+  // });
+  const sessionId = localStorage.getItem('guest_session_id');
+
+  const handleAddToCart = async (track) => {
+    try {
+      const response = await cartApi.post('/cart/add', {
+        track_id: track.id,
+        session_id: !userId ? sessionId : null,
+      }, {
+        headers: userId ? { 'X-User-ID': userId } : {},
+      });
+      alert(response.data.message || 'Трек добавлен в корзину');
+    } catch (error) {
+      console.error('Ошибка при добавлении в корзину:', error);
+      alert('Не удалось добавить трек в корзину');
+    }
+  };
+
   useEffect(() => {
     const audio = audioRef.current;
     const onEnded = () => {
@@ -23,20 +50,10 @@ export function TrackList({ tracks }) {
     };
   }, []);
 
-  // Функция для получения корректного URL к файлу
   const getFileUrl = (track) => {
-    // если backend отдаёт file_url (относительный или абсолютный) — берём его
-    // if (track.file_url) {
-    //   return track.file_url.startsWith('http')
-    //     ? track.file_url
-    //     : `${API_URL}${track.file_url}`;
-    // }
-
-    // иначе используем имя файла из file_watermarked
     if (track.file_watermarked) {
       return `${API_URL}/tracks/media/watermarked/${track.file_watermarked}`;
     }
-
     return '';
   };
 
@@ -48,7 +65,6 @@ export function TrackList({ tracks }) {
       return;
     }
 
-    // переключаем трек
     if (currentTrackId === track.id) {
       if (audio.paused) {
         audio.play();
@@ -72,7 +88,6 @@ export function TrackList({ tracks }) {
     if (!src) return;
     const link = document.createElement('a');
     link.href = src;
-    // можно использовать title или vk_number для имени файла
     link.download = `${track.title || 'track'}.mp3`;
     document.body.appendChild(link);
     link.click();
@@ -104,7 +119,7 @@ export function TrackList({ tracks }) {
             </button>
             <button
               title="Добавить в корзину"
-              onClick={() => {/* ваша логика */}}
+              onClick={() => handleAddToCart(track)}
             >
               🛒
             </button>

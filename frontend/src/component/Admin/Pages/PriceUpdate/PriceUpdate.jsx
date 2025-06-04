@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import apiClient from '../../../../api/apiClient';
+// import apiClient from '../../../../api/apiClient';
+import { trackApi } from '../../../../api/apiClient';
 import './PriceUpdate.scss';
 
 export function PriceUpdate() {
@@ -21,7 +22,7 @@ export function PriceUpdate() {
     setError(null);
 
     try {
-      const response = await apiClient.get('/tracks/admin', {
+      const response = await trackApi.get('/tracks/admin', {
         params: { price: fromPrice }
       });
       // setTracks(response.data);
@@ -49,7 +50,7 @@ export function PriceUpdate() {
     const trackIds = filteredTracks.map(track => track.id);
 
     try {
-      const response = await apiClient.put('/tracks/admin/update-price', {
+      const response = await trackApi.put('/tracks/admin/update-price', {
         track_ids: trackIds,
         new_price: toPrice
       });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import apiClient from '../../../../api/apiClient';
+// import apiClient from '../../../../api/apiClient';
+import { trackApi } from '../../../../api/apiClient';
 import { TrackForm } from '../../Shared/TrackForm/TrackForm';
 
 export function EditTrackPage() {
@@ -31,7 +32,7 @@ export function EditTrackPage() {
   useEffect(() => {
     const fetchTrack = async () => {
       try {
-        const response = await apiClient.get(`/tracks/admin/${id}`);
+        const response = await trackApi.get(`/tracks/admin/${id}`);
         setForm(response.data);
       } catch (err) {
         setError(err);
@@ -75,7 +76,7 @@ export function EditTrackPage() {
       if (fileClean) data.append('file_clean', fileClean);
       if (fileWatermarked) data.append('file_watermarked', fileWatermarked);
 
-      await apiClient.put(`/tracks/admin/${id}`, data); // не указываем Content-Type
+      await trackApi.put(`/tracks/admin/${id}`, data); // не указываем Content-Type
 
       navigate('/admin/tracks');
     } catch (err) {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../../../../api/apiClient';
+// import apiClient from '../../../../api/apiClient';
+import { trackApi } from '../../../../api/apiClient';
 import { PlaylistForm } from '../../Shared/PlaylistForm/PlaylistForm';
 
 export function AddPlaylist() {
@@ -27,7 +28,7 @@ const handleSubmit = async (form) => {
     }
 
     // Отправляем через apiClient с обновлением заголовков
-    const response = await apiClient.post('/playlists/admin', formData, {
+    const response = await trackApi.post('/playlists/admin', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

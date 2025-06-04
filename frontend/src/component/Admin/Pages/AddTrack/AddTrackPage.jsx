@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../../../../api/apiClient';
+// import apiClient from '../../../../api/apiClient';
+import { trackApi } from '../../../../api/apiClient';
 import { TrackForm } from '../../Shared/TrackForm/TrackForm';
 
 export function AddTrackPage() {
@@ -56,7 +57,7 @@ export function AddTrackPage() {
       if (fileClean) data.append('file_clean', fileClean);
       if (fileWatermarked) data.append('file_watermarked', fileWatermarked);
 
-      await apiClient.post('/tracks/admin', data); // ❗️ НЕ указываем headers
+      await trackApi.post('/tracks/admin', data); // ❗️ НЕ указываем headers
 
       navigate('/admin/tracks');
     } catch (err) {

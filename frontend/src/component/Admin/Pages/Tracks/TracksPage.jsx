@@ -1,7 +1,8 @@
 // frontend/src/component/Admin/Pages/Tracks/TracksPage.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../../../../api/apiClient';
+// import apiClient from '../../../../api/apiClient';
+import { trackApi } from '../../../../api/apiClient';
 import './TracksPage.scss';
 
 export function TracksPage() {
@@ -14,7 +15,7 @@ export function TracksPage() {
     async function fetchTracks() {
       try {
         // запросим к Flask именно тот эндпоинт, который там есть
-        const { data } = await apiClient.get('/tracks/admin');
+        const { data } = await trackApi.get('/tracks/admin');
         setTracks(data);
       } catch (err) {
         console.error('Ошибка при загрузке треков:', err);
@@ -33,7 +34,7 @@ export function TracksPage() {
   const handleDelete = async (id) => {
     if (!window.confirm('Удалить этот трек?')) return;
     try {
-      await apiClient.delete(`/tracks/admin/${id}`);
+      await trackApi.delete(`/tracks/admin/${id}`);
       setTracks(prev => prev.filter(t => t.id !== id));
     } catch (err) {
       console.error('Не удалось удалить трек:', err);

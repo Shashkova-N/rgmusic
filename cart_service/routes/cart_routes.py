@@ -1,80 +1,130 @@
 from flask import Blueprint, request, jsonify, current_app
-from extensions import db
-from models import Cart
+from models import db, Cart, CartItem
 import uuid, requests
 from datetime import datetime, timedelta
 
 cart_bp = Blueprint('cart', __name__, url_prefix='/cart')
 
-@cart_bp.route('', methods=['POST'])
+@cart_bp.route('/add', methods=['POST', 'OPTIONS'])
 def add_to_cart():
+    if request.method == 'OPTIONS':
+        return '', 200
+
     data = request.get_json()
-    session_id = request.headers.get('Session-ID') or str(uuid.uuid4())
-    user_id = data.get('user_id')
     track_id = data.get('track_id')
+    session_id = data.get('session_id')
 
-    # проверка региональных покупок через user_service
-    if user_id:
-        try:
-            auth = request.headers.get('Authorization')
-            # 1) получить регион
-            r = requests.get(
-                f'http://user_service:5000/users/{user_id}',
-                headers={'Authorization': auth}
-            )
-            if r.status_code != 200:
-                return jsonify({'error': 'Не удалось получить данные пользователя'}), 400
-            region = r.json()['region']
+    if not track_id:
+        return jsonify({'error': 'track_id is required'}), 400
 
-            # 2) проверить прошлые покупки
-            one_year_ago = (datetime.utcnow() - timedelta(days=365)).isoformat()
-            r2 = requests.get(
-                f'http://user_service:5000/users/{user_id}/purchases',
-                headers={'Authorization': auth}
-            )
-            if r2.status_code == 200:
-                for p in r2.json():
-                    if (p['track_id'] == track_id and 
-                        p['region'] == region and 
-                        p['purchase_date'] >= one_year_ago):
-                        return jsonify({
-                            'message': 'Этот трек уже был куплен в вашем регионе за последний год',
-                            'session_id': session_id
-                        }), 400
-        except requests.RequestException:
-            return jsonify({'error': 'Ошибка при проверке покупок'}), 500
+    user_id = request.headers.get('X-User-ID')
 
-    # добавить или обновить корзину
-    cart = Cart.query.filter(
-        (Cart.session_id == session_id) | (Cart.user_id == user_id)
-    ).first()
-    if cart:
-        ids = cart.track_ids.split(',')
-        if str(track_id) not in ids:
-            ids.append(str(track_id))
-            cart.track_ids = ','.join(ids)
-    else:
-        cart = Cart(session_id=session_id, user_id=user_id, track_ids=str(track_id))
-        db.session.add(cart)
+    if not user_id and not session_id:
+        return jsonify({'error': 'Either user_id or session_id must be provided'}), 400
 
-    db.session.commit()
-    return jsonify({'message': 'Трек добавлен в корзину', 'session_id': session_id}), 200
+    cart = Cart.query.filter_by(user_id=user_id).first() if user_id else Cart.query.filter_by(session_id=session_id).first()
 
-@cart_bp.route('', methods=['GET'])
-def get_cart():
-    session_id = request.headers.get('Session-ID')
-    user_id = request.args.get('user_id', type=int)
-    if not session_id and not user_id:
-        return jsonify({'error': 'Требуется session_id или user_id'}), 400
-
-    cart = Cart.query.filter(
-        (Cart.session_id == session_id) | (Cart.user_id == user_id)
-    ).first()
     if not cart:
-        return jsonify({'message': 'Корзина пуста'}), 404
+        cart = Cart(user_id=user_id, session_id=session_id)
+        db.session.add(cart)
+        db.session.commit()
 
-    return jsonify({
-        'session_id': cart.session_id,
-        'user_id': cart.user_id,
-        'track_ids': cart.track_ids.split(',')
-    }), 200
+    existing_item = CartItem.query.filter_by(cart_id=cart.id, track_id=track_id).first()
+    if existing_item:
+        return jsonify({'message': 'Track already in cart'}), 200
+
+    new_item = CartItem(cart_id=cart.id, track_id=track_id)
+    db.session.add(new_item)
+    db.session.commit()
+
+    return jsonify({'message': 'Track added to cart'}), 201
+
+
+@cart_bp.route('/', methods=['GET'])
+def get_cart():
+    user_id = request.headers.get('X-User-ID')
+    session_id = request.args.get('session_id')
+
+    if not user_id and not session_id:
+        return jsonify({'error': 'Either user_id or session_id must be provided'}), 400
+
+    cart = Cart.query.filter_by(user_id=user_id).first() if user_id else Cart.query.filter_by(session_id=session_id).first()
+
+    if not cart:
+        return jsonify({'items': []}), 200
+
+    enriched_items = []
+
+    for item in cart.items:
+        track_id = item.track_id
+
+        try:
+            response = requests.get(
+                f"{current_app.config['TRACK_SERVICE_URL']}/tracks/{track_id}",
+                timeout=3
+            )
+            if response.status_code == 200:
+                track_data = response.json()
+                enriched_items.append({
+                    'id': item.id,
+                    'track_id': track_id,
+                    'title': f"Track_{track_data.get('vk_number')}",
+                    'price': track_data.get('price'),
+                    'duration': track_data.get('duration'),
+                })
+            else:
+                enriched_items.append({
+                    'id': item.id,
+                    'track_id': track_id,
+                    'title': f"Track #{track_id}",
+                    'price': 0,
+                    'duration': 0,
+                })
+        except Exception as e:
+            current_app.logger.error(f"Ошибка запроса к track_service: {e}")
+            enriched_items.append({
+                'id': item.id,
+                'track_id': track_id,
+                'title': f"Track #{track_id}",
+                'price': 0,
+                'duration': 0,
+            })
+
+    return jsonify({'items': enriched_items}), 200
+
+
+@cart_bp.route('/<int:item_id>', methods=['DELETE'])
+def remove_from_cart(item_id):
+    item = CartItem.query.get(item_id)
+
+    if not item:
+        return jsonify({'error': 'Cart item not found'}), 404
+
+    db.session.delete(item)
+    db.session.commit()
+
+    return jsonify({'message': 'Item removed from cart'}), 200
+
+
+@cart_bp.route('/item/<int:item_id>', methods=['OPTIONS'])
+def cart_item_options(item_id):
+    return '', 200
+
+
+@cart_bp.route('/add', methods=['OPTIONS'])
+def handle_options():
+    return '', 200
+
+
+@cart_bp.route('/count', methods=['GET'])
+def get_cart_count():
+    user_id = request.headers.get('X-User-ID')
+    session_id = request.args.get('session_id')
+
+    if not user_id and not session_id:
+        return jsonify({'error': 'Either user_id or session_id must be provided'}), 400
+
+    cart = Cart.query.filter_by(user_id=user_id).first() if user_id else Cart.query.filter_by(session_id=session_id).first()
+
+    count = len(cart.items) if cart else 0
+    return jsonify({'count': count}), 200

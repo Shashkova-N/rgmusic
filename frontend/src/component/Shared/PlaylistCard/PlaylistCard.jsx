@@ -18,7 +18,7 @@ export function PlaylistCard({ playlist, showEdit = false, isClickable = true })
     <div className="playlist-card" onClick={handleClick} role="button" tabIndex={isClickable ? 0 : -1}>
       <div className="playlist-card__image-container">
         <img
-          src={`${process.env.REACT_APP_API_URL}/playlists/media/covers/${playlist.cover_image}`}
+          src={`${process.env.REACT_APP_TRACK_API}/playlists/media/covers/${playlist.cover_image}`}
           alt={playlist.name}
           className="playlist-card__image"
         />

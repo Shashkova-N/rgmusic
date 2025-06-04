@@ -58,8 +58,8 @@ services:
     depends_on:
       - cart_db
     command: sh -c "while ! nc -z cart_db 5432; do sleep 1; done; python app.py"
-    volumes:
-      - ./cart_service/migrations:/app/migrations
+    # volumes:
+      # - ./cart_service/migrations:/app/migrations
   cart_db:
     image: postgres:13
     environment:

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../../../../api/apiClient';
+// import apiClient from '../../../../api/apiClient';
+import { trackApi } from '../../../../api/apiClient';
 import { PlaylistCard } from '../../../Shared/PlaylistCard/PlaylistCard';
 
 export function PlaylistsPage() {
@@ -13,7 +14,7 @@ export function PlaylistsPage() {
   useEffect(() => {
     async function fetchPlaylists() {
       try {
-        const response = await apiClient.get('/playlists/admin', {
+        const response = await trackApi.get('/playlists/admin', {
           params: { sort_by: order },
         });
         setPlaylists(response.data);

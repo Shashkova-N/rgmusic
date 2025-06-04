@@ -61,6 +61,25 @@ def get_tracks():
     }), 200
 
 
+@track_bp.route('/<int:id>', methods=['GET'])
+def get_track_by_id_user(id):
+    track = Track.query.get(id)
+    if not track:
+        return jsonify({"error": "Трек не найден"}), 404
+
+    return jsonify({
+        'id': track.id,
+        'genre': track.genre,
+        'tempo': track.tempo,
+        'voice': track.voice,
+        'duration': track.duration,
+        'language': track.language,
+        'price': track.price,
+        'vk_number': track.vk_number,
+        'file_watermarked': track.file_watermarked,
+    }), 200
+
+
 @track_bp.route('/filters', methods=['GET'])
 def get_track_filters():
     genres = [row[0] for row in db.session.query(Track.genre).filter(Track.genre != None).filter(Track.is_visible==True).distinct().all()]
