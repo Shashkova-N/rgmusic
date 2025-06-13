@@ -34,7 +34,7 @@ const handleSubmit = async (form) => {
       }
     });
 
-    navigate(`/admin/playlists/${response.data.playlist.id}/edit`);
+    navigate('/admin/playlists');
   } catch (err) {
     console.error('Ошибка при добавлении плейлиста:', err);
     setError(err);

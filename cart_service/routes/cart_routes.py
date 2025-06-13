@@ -128,3 +128,27 @@ def get_cart_count():
 
     count = len(cart.items) if cart else 0
     return jsonify({'count': count}), 200
+
+
+@cart_bp.route('/clear', methods=['DELETE'])
+def clear_cart():
+    user_id = request.headers.get('X-User-ID')
+    session_id = request.args.get('session_id')
+
+    if not user_id and not session_id:
+        return jsonify({'error': 'Either user_id or session_id must be provided'}), 400
+
+    cart = Cart.query.filter_by(user_id=user_id).first() if user_id else Cart.query.filter_by(session_id=session_id).first()
+
+    if not cart:
+        return jsonify({'message': 'Cart already empty'}), 200
+
+    CartItem.query.filter_by(cart_id=cart.id).delete()
+    db.session.commit()
+
+    return jsonify({'message': 'Cart cleared'}), 200
+
+
+@cart_bp.route('/clear', methods=['OPTIONS'])
+def handle_clear_options():
+    return '', 200

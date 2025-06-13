@@ -1,58 +1,37 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
 import './Footer.scss';
 
 export function Footer() {
   return (
     <footer className="footer">
-      <div className="footer__social">
-        <a
-          href="https://wa.me/your-number"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="WhatsApp"
-          className="footer__icon"
-        >
-          <i className="icon-whatsapp" />
-        </a>
-        <a
-          href="https://vk.com/yourpage"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="VK"
-          className="footer__icon"
-        >
-          <i className="icon-vk" />
-        </a>
-        <a
-          href="https://ok.ru/yourpage"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Odnoklassniki"
-          className="footer__icon"
-        >
-          <i className="icon-odnoklassniki" />
-        </a>
-        <a
-          href="https://www.youtube.com/channel/yourchannel"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="YouTube"
-          className="footer__icon"
-        >
-          <i className="icon-youtube" />
-        </a>
+      <div className="footer__top">
+        <div className="footer__socials">
+          <a href="https://wa.me/..." target="_blank" rel="noreferrer">
+            <img src="/icons/whatsapp.svg" alt="WhatsApp" />
+          </a>
+          <a href="https://vk.com/..." target="_blank" rel="noreferrer">
+            <img src="/icons/vk.svg" alt="VK" />
+          </a>
+          <a href="https://rutube.ru/..." target="_blank" rel="noreferrer">
+            <img src="/icons/rutube.svg" alt="Rutube" />
+          </a>
+          <a href="https://youtube.com/..." target="_blank" rel="noreferrer">
+            <img src="/icons/youtube.svg" alt="YouTube" />
+          </a>
+        </div>
       </div>
 
-      <div className="footer__nav">
-        <Link to="/contacts" className="footer__link">Контакты</Link>
-        <Link to="/sitemap" className="footer__link">Карта сайта</Link>
-        <Link to="/terms" className="footer__link">Пользовательское соглашение</Link>
-        <Link to="/privacy" className="footer__link">Согласие на обработку персональных данных</Link>
-      </div>
+      <hr className="footer__line" />
 
-      <div className="footer__copy">
-        © RGmusic {new Date().getFullYear()}, All rights reserved
+      <div className="footer__bottom">
+        <div className="footer__links">
+          <a href="/contacts">Контакты</a>
+          <a href="/sitemap">Карта сайта</a>
+          <a href="/terms">Пользовательское соглашение</a>
+          <a href="/privacy">Согласие на обработку персональных данных</a>
+        </div>
+        <div className="footer__copyright">
+          © RGmusic 2025, All rights reserved
+        </div>
       </div>
     </footer>
   );

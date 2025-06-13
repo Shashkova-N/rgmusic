@@ -1,6 +1,101 @@
 .track-filters {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background-color: #f5f5f5;
-  border-radius: 6px;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+  width: 350px;
+
+  h3 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+  }
+
+  .filter-group {
+    margin-bottom: 1.2rem;
+
+    span {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    .rc-slider {
+      margin: 0.5rem 0;
+    }
+
+    label {
+      display: block;
+      margin-left: 0.5rem;
+      margin-bottom: 0.3rem;
+      font-size: 0.95rem;
+      color: #555;
+
+      input[type='checkbox'] {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  // колонки внутри группы
+  .filter-group.two-column {
+    .column-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem 1rem;
+    }
+  }
+
+  // колонки Темп + Голос
+  .filter-columns {
+    display: flex;
+    gap: 1.5rem;
+
+    .filter-group.half {
+      flex: 1;
+
+      label {
+        margin-left: 0;
+      }
+    }
+  }
+}
+
+.filter-actions {
+  text-align: right;
+  margin-top: 1rem;
+
+  .reset-button {
+    padding: 0.5rem 1rem;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #ddd;
+    }
+  }
+}
+
+.price-inputs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+
+  input {
+    width: 70px;
+    padding: 0.3rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  label {
+    font-size: 0.9rem;
+  }
 }

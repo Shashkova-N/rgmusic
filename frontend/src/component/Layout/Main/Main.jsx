@@ -4,15 +4,20 @@ import { PlaylistSlider } from './PlaylistSlider';
 import { TrackFilters } from '../../Shared/TrackFilters/TrackFilters';
 import { TrackList } from '../../Shared/TrackList/TrackList';
 
+import '../../../scss/style.scss'
+
 export function Main() {
   const { user, role, signOut } = useContext(AuthContext);
 
   const [tracks, setTracks] = useState([]);
   const [filters, setFilters] = useState({
-    genre: '',
-    tempo: '',
-    voice: '',
-    language: ''
+    genre: [],
+    tempo: [],
+    voice: [],
+    language: [],
+    duration: [],
+    min_price: null,
+    max_price: null
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,15 +27,25 @@ export function Main() {
 
   const loadTracks = useCallback(async (page = 1) => {
     let offset = (page - 1) * limit;
+    const params = new URLSearchParams();
 
-    let queryParams = new URLSearchParams({
-      limit: limit.toString(),
-      offset: offset.toString(),
-      ...Object.fromEntries(Object.entries(filters).filter(([k,v]) => v))
+    // массивные фильтры
+    ['genre', 'tempo', 'voice', 'language', 'duration'].forEach((key) => {
+      (filters[key] || []).forEach((val) => {
+        if (val !== '') params.append(key, val);
+      });
     });
 
+    // числовые фильтры
+    if (filters.min_price != null) params.append('min_price', filters.min_price);
+    if (filters.max_price != null) params.append('max_price', filters.max_price);
+
+    // пагинация
+    params.append('limit', limit.toString());
+    params.append('offset', offset.toString());
+
     try {
-      const res = await fetch(`http://localhost:5001/tracks?${queryParams}`);
+      const res = await fetch(`http://localhost:5001/tracks?${params.toString()}`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -40,21 +55,15 @@ export function Main() {
         return;
       }
 
-      const newTracks = data.tracks || [];
+      setTracks(data.tracks || []);
 
-      setTracks(newTracks);
-
-      // Рассчитаем общее количество страниц, если сервер возвращает total count
-      // Например, если сервер в data.total_count:
       if (typeof data.total_count === 'number') {
         setTotalPages(Math.ceil(data.total_count / limit));
       } else {
-        // Если total_count не приходит, ставим хотя бы 1 страницу
         setTotalPages(1);
       }
 
       setCurrentPage(page);
-
     } catch (err) {
       console.error('Ошибка соединения с сервером', err);
       setTracks([]);
@@ -63,10 +72,9 @@ export function Main() {
   }, [filters]);
 
   useEffect(() => {
-    loadTracks(1); // загружаем первую страницу при изменении фильтров
+    loadTracks(1);
   }, [filters, loadTracks]);
 
-  // Рендерим кнопки страниц
   const renderPagination = () => {
     const buttons = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -85,23 +93,20 @@ export function Main() {
   };
 
   return (
-    <div>
-      <h2>Main page</h2>
-
-      {user ? (
-        <div>
-          <p>Привет, {user}! Роль: {role}</p>
-          <button onClick={signOut}>Выйти</button>
-        </div>
-      ) : (
-        <p>Вы не вошли</p>
-      )}
-
+    <div className="main__container">
       <PlaylistSlider />
 
-      <TrackFilters filters={filters} setFilters={setFilters} />
+      <div className="tracks-section">
+        {/* Явный обёртка-блок для списка */}
+        <div className="tracks-section__list">
+          <TrackList tracks={tracks} />
+        </div>
 
-      <TrackList tracks={tracks} />
+        {/* И для фильтров */}
+        <div className="tracks-section__filters">
+          <TrackFilters filters={filters} setFilters={setFilters} />
+        </div>
+      </div>
 
       <div style={{ marginTop: '20px' }}>
         {renderPagination()}

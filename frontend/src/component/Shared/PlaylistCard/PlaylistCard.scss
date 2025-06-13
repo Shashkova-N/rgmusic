@@ -1,10 +1,11 @@
 .playlist-card {
   position: relative;
-  width: 200px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  background-color: white;
+  width: 135px;
+  flex: 0 0 auto;
+  // border-radius: 12px;
+  // overflow: hidden;
+  // box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  // background-color: white;
   cursor: pointer;
 
   &__image-container {
@@ -12,6 +13,7 @@
     width: 100%;
     padding-top: 100%; // квадрат
     overflow: hidden;
+    border-radius: 12px;
   }
 
   &__image {
@@ -36,8 +38,8 @@
     transition: opacity 0.3s;
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
-    align-items: flex-start;
+    gap: 0.25rem;
+    // align-items: flex-start;
   }
 
   &:hover &__overlay {
@@ -47,10 +49,9 @@
   &__edit-btn {
     background: none;
     border: none;
-    color: white;
-    font-size: 1.2rem;
     cursor: pointer;
     padding: 0;
+    margin-top: 4px;
     align-self: flex-end;
 
     &:hover {
@@ -58,11 +59,35 @@
     }
   }
 
+  &__edit-icon {
+    width: 23px;
+    height: 23px;
+  }
+
+  &__overlay-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 0.5rem;
+  }
+
+  &__info-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__info-icon {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1); // чтобы иконка была белой
+  }
+
   &__name {
     text-align: center;
     padding: 0.5rem;
-    font-weight: bold;
-    font-size: 1rem;
+    // font-weight: bold;
+    font-size: 0.9rem;
     color: #333;
   }
 }

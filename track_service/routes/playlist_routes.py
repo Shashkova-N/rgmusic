@@ -3,6 +3,7 @@ from sqlalchemy import and_, func, inspect
 from models import db, Playlist, Track
 from models.association import playlist_track
 import os
+import uuid
 from werkzeug.utils import secure_filename
 
 playlist_bp = Blueprint('playlists', __name__, url_prefix='/playlists')
@@ -181,7 +182,7 @@ def create_playlist():
     form = request.form
     name = form.get('name')
     description = form.get('description')
-    is_visible = form.get('is_visible', 'true').lower() in ('1','true','yes')
+    is_visible = form.get('is_visible', 'true').lower() in ('1', 'true', 'yes')
 
     if not name:
         return jsonify({"error": "Не указано название плейлиста"}), 400
@@ -194,7 +195,15 @@ def create_playlist():
     # Сохраняем файл, если он передан
     cover_filename = None
     if cover_image and cover_image.filename:
-        cover_filename = secure_filename(cover_image.filename)
+        print("Получено имя файла:", cover_image.filename)
+
+        # Получаем расширение файла
+        original_filename = secure_filename(cover_image.filename)
+        _, ext = os.path.splitext(original_filename)
+        ext = ext.lower()
+
+        # Генерируем уникальное имя файла с тем же расширением
+        cover_filename = f"{uuid.uuid4().hex}{ext}"
         cover_path = os.path.join(cover_dir, cover_filename)
         cover_image.save(cover_path)
 
@@ -204,8 +213,8 @@ def create_playlist():
         description=description,
         cover_image=cover_filename,
         is_visible=is_visible,
-        views=0,  # Новый плейлист ещё никто не просматривал
-        manual_order = 0
+        views=0,
+        manual_order=0
     )
 
     try:

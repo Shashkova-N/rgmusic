@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './CartPage.scss';
 import { cartApi, trackApi } from '../../../api/apiClient';
-
+import { useCart } from '../../../context/CartContext';
+import { useContext } from 'react';
+import { AuthContext } from '../../../context/AuthProvider'; // путь может отличаться
 
 export function CartPage({ session_id }) {
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const { userId } = useContext(AuthContext);
+
+  const { refreshCartCount } = useCart();
 
   // Функция для загрузки корзины
   const fetchCart = async () => {
@@ -63,6 +69,8 @@ export function CartPage({ session_id }) {
       setCartItems(updatedCart);
       const total = updatedCart.reduce((sum, item) => sum + parseFloat(item.price), 0);
       setTotalPrice(total);
+
+      await refreshCartCount(); // <== обновляем иконку корзины
     } catch (error) {
       console.error('Ошибка при удалении трека из корзины:', error);
       alert('Не удалось удалить трек из корзины');
@@ -71,12 +79,18 @@ export function CartPage({ session_id }) {
 
   // Очистка всей корзины
   const handleClearCart = async () => {
-    if (!window.confirm('Очистить всю корзину?')) return;
-
     try {
-      await cartApi.delete(`/cart/clear?session_id=${session_id}`);
-      setCartItems([]);
-      setTotalPrice(0);
+      const isGuest = !userId || userId === 'null' || userId === '';
+      const sessionId = localStorage.getItem('guest_session_id');
+
+      await cartApi.delete('/cart/clear', {
+        params: isGuest ? { session_id: sessionId } : {},
+        headers: !isGuest ? { 'X-User-ID': userId } : {},
+      });
+
+      await refreshCartCount();
+      alert('Корзина очищена');
+      setCartItems([]); // если корзина хранится в состоянии
     } catch (error) {
       console.error('Ошибка при очистке корзины:', error);
       alert('Не удалось очистить корзину');

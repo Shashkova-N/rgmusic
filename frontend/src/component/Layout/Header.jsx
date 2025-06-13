@@ -1,15 +1,14 @@
 import { useContext, useState, useEffect, useRef } from 'react';
 import { AuthContext } from '../../context/AuthProvider';
+import { useCart } from '../../context/CartContext';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import './Header.scss';
 
 export function Header() {
   const { user, role, signOut } = useContext(AuthContext);
+  const { cartCount } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
   const menuRef = useRef(null);
-  const CART_API_URL = process.env.REACT_APP_CART_API;
 
   useEffect(() => {
     const handleClickOutside = e => {
@@ -19,25 +18,6 @@ export function Header() {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    const userId = localStorage.getItem('user_id');
-    const sessionId = localStorage.getItem('guest_session_id');
-
-    const fetchCartCount = async () => {
-      try {
-        const response = await axios.get(`${CART_API_URL}/cart/count`, {
-          params: !userId ? { session_id: sessionId } : {},
-          headers: userId ? { 'X-User-ID': userId } : {}
-        });
-        setCartCount(response.data.count);
-      } catch (err) {
-        console.error('Ошибка при получении количества товаров в корзине:', err);
-      }
-    };
-
-    fetchCartCount();
   }, []);
 
   return (
@@ -72,10 +52,14 @@ export function Header() {
           {/* Корзина */}
           <Link to="/cart" className="header__icon-btn header__cart" aria-label="Корзина" title="Корзина">
             <img
-              src={cartCount > 0 ? '/icons/cart_with_badge.svg' : '/icons/cart.svg'}
+              // src={cartCount > 0 ? '/icons/cart_with_badge.svg' : '/icons/cart.svg'}
+              src={'/icons/cart.svg'}
               alt="Корзина"
               className="header__icon-img"
             />
+            {cartCount > 0 && (
+              <span className="header__badge">{cartCount}</span>
+            )}
           </Link>
 
           {/* Панель администратора */}

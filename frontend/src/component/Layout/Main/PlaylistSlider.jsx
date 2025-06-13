@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlaylistCard } from '../../Shared/PlaylistCard/PlaylistCard';
+import { useRef } from 'react';
 import './PlaylistSlider.scss';
 
 export function PlaylistSlider() {
   const [playlists, setPlaylists] = useState([]);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const containerRef = useRef(null);
+
+  const scrollLeft = () => {
+    containerRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+  };
+
+  const scrollRight = () => {
+    containerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+  };
+
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -36,9 +48,9 @@ export function PlaylistSlider() {
 
   return (
     <div className="playlist-slider">
-      <button className="scroll-button left">◀</button>
+      <button className="scroll-button left" onClick={scrollLeft}>◀</button>
 
-      <div className="playlist-container">
+      <div className="playlist-container" ref={containerRef}>
         {playlists.map(playlist => (
           <PlaylistCard
             key={playlist.id}
@@ -53,7 +65,7 @@ export function PlaylistSlider() {
         ))}
       </div>
 
-      <button className="scroll-button right">▶</button>
+      <button className="scroll-button right" onClick={scrollRight}>▶</button>
     </div>
   );
 }
