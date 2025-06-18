@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './CartPage.scss';
 import { cartApi, trackApi } from '../../../api/apiClient';
 import { useCart } from '../../../context/CartContext';
-import { useContext } from 'react';
-import { AuthContext } from '../../../context/AuthProvider'; // путь может отличаться
+import { AuthContext } from '../../../context/AuthProvider';
 
 export function CartPage({ session_id }) {
   const [cartItems, setCartItems] = useState([]);
@@ -11,20 +10,34 @@ export function CartPage({ session_id }) {
   const [loading, setLoading] = useState(true);
 
   const { userId } = useContext(AuthContext);
-
   const { refreshCartCount } = useCart();
 
-  // Функция для загрузки корзины
+  // Функция загрузки корзины
   const fetchCart = async () => {
+    console.log('→ fetchCart start', { userId, session_id });
     try {
-      if (!session_id) {
+      const isGuest = !userId;
+
+      if (isGuest && !session_id) {
         console.warn('Гость: session_id не найден');
+        setCartItems([]);
+        setLoading(false);
         return;
       }
 
-      const res = await cartApi.get(`/cart/?session_id=${session_id}`);
-      const items = res.data.items || [];
+      const endpoint = '/cart/';
+      const res = await cartApi.get(endpoint, {
+        params: isGuest ? { session_id } : {},
+        headers: isGuest ? {} : { 'X-User-ID': userId },
+      });
 
+      console.log('← fetchCart response', res.status, res.data);
+
+      const items = Array.isArray(res.data.items) ? res.data.items : [];
+
+      console.log('← items', items);
+
+      // Получаем полные данные о треках
       const tracks = await Promise.all(
         items.map(async (item) => {
           try {
@@ -32,73 +45,82 @@ export function CartPage({ session_id }) {
             return {
               cart_item_id: item.id,
               track_id: item.track_id,
-              ...trackRes.data
+              ...trackRes.data,
             };
           } catch (err) {
-            console.error(`Ошибка при загрузке трека ${item.track_id}:`, err.message);
+            console.error(`Ошибка загрузки трека ${item.track_id}:`, err.message);
             return null;
           }
         })
       );
 
-      const validTracks = tracks.filter(Boolean); // убираем null
+      const validTracks = tracks.filter(Boolean);
+      console.log('← validTracks', validTracks);
+
       setCartItems(validTracks);
-      const total = validTracks.reduce((sum, item) => sum + parseFloat(item.price), 0);
+      const total = validTracks.reduce((sum, t) => sum + parseFloat(t.price || 0), 0);
       setTotalPrice(total);
-    } catch (err) {
-      console.error('Ошибка при загрузке корзины:', err.response?.data || err.message);
+    } catch (e) {
+      console.error('✖ Ошибка загрузки корзины:', e.message);
       alert('Не удалось загрузить корзину. Попробуйте перезагрузить страницу.');
     } finally {
       setLoading(false);
     }
   };
 
+  // Загружаем корзину только при монтировании или изменении session_id / userId
   useEffect(() => {
-    if (session_id) {
+    if (session_id || userId) {
       fetchCart();
     }
-  }, [session_id]);
+  }, [session_id, userId]);
 
   // Удаление одного элемента
-  const handleRemoveFromCart = async (cartItemId) => {
-    if (!window.confirm('Вы действительно хотите удалить этот трек из корзины?')) return;
+const handleRemoveFromCart = async (cartItemId) => {
+  if (!window.confirm('Вы действительно хотите удалить этот трек из корзины?')) return;
 
-    try {
-      await cartApi.delete(`/cart/${cartItemId}`);
-      const updatedCart = cartItems.filter(item => item.cart_item_id !== cartItemId);
-      setCartItems(updatedCart);
-      const total = updatedCart.reduce((sum, item) => sum + parseFloat(item.price), 0);
-      setTotalPrice(total);
+  try {
+    await cartApi.delete(`/cart/${cartItemId}`);
+    
+    // Обновляем локальное состояние
+    const updated = cartItems.filter(item => item.cart_item_id !== cartItemId);
+    setCartItems(updated);
 
-      await refreshCartCount(); // <== обновляем иконку корзины
-    } catch (error) {
-      console.error('Ошибка при удалении трека из корзины:', error);
-      alert('Не удалось удалить трек из корзины');
-    }
-  };
+    // Пересчитываем цену
+    const newTotal = updated.reduce((sum, t) => sum + parseFloat(t.price || 0), 0);
+    setTotalPrice(newTotal);
+
+    // Обновляем счётчик в хэдере
+    await refreshCartCount();
+
+  } catch (error) {
+    console.error('Ошибка при удалении из корзины:', error);
+    alert('Не удалось удалить трек из корзины');
+  }
+};
 
   // Очистка всей корзины
   const handleClearCart = async () => {
+    if (!window.confirm('Очистить всю корзину?')) return;
+
     try {
-      const isGuest = !userId || userId === 'null' || userId === '';
-      const sessionId = localStorage.getItem('guest_session_id');
+      const isGuest = !userId;
+      const params = isGuest ? { session_id } : {};
+      const headers = isGuest ? {} : { 'X-User-ID': userId };
 
-      await cartApi.delete('/cart/clear', {
-        params: isGuest ? { session_id: sessionId } : {},
-        headers: !isGuest ? { 'X-User-ID': userId } : {},
-      });
-
+      await cartApi.delete('/cart/clear', { params, headers });
+      setCartItems([]);
+      setTotalPrice(0);
       await refreshCartCount();
       alert('Корзина очищена');
-      setCartItems([]); // если корзина хранится в состоянии
-    } catch (error) {
-      console.error('Ошибка при очистке корзины:', error);
+    } catch (e) {
+      console.error('Ошибка при очистке корзины:', e.message);
       alert('Не удалось очистить корзину');
     }
   };
 
   if (loading) return <p>Загрузка корзины...</p>;
-  if (!session_id) return <p>Нужно перезагрузить страницу</p>;
+  if (!session_id && !userId) return <p>Нужно перезагрузить страницу</p>;
 
   return (
     <div className="cart-page">

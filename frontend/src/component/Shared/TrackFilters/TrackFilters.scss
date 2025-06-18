@@ -99,3 +99,21 @@
     font-size: 0.9rem;
   }
 }
+
+.rc-slider-handle {
+  border: solid 2px #320568 !important;
+  background-color: #320568 !important;
+  box-shadow: none !important; // убрать голубое свечение при фокусе
+}
+
+.rc-slider-handle:hover {
+  border-color: #320568 !important;
+}
+
+.rc-slider-track {
+  background-color: #320568 !important;
+}
+
+.rc-slider-rail {
+  background-color: #ddd; // цвет полосы "по умолчанию"
+}

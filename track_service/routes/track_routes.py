@@ -38,6 +38,10 @@ def get_tracks():
     if max_price is not None:
         query = query.filter(Track.price <= max_price)
 
+    vk_number = request.args.get('vk_number')
+    if vk_number:
+        query = query.filter(Track.vk_number.ilike(f'%{vk_number}%'))
+
     total_count = query.count()
     tracks = query.offset(offset).limit(limit).all()
 

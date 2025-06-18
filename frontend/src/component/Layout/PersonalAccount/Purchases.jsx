@@ -1,6 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../../context/AuthProvider';
 
+const USER_API = process.env.REACT_APP_USER_API;
+
 export function Purchases() {
   const { userId, token } = useContext(AuthContext);
   const [purchases, setPurchases] = useState([]);
@@ -9,9 +11,12 @@ export function Purchases() {
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/users/${userId}/purchases`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `${USER_API}/users/${userId}/purchases`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const data = await res.json();
 
         if (!res.ok) {

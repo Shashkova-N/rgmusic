@@ -39,9 +39,10 @@ export function TrackFilters({ playlistId, filters, setFilters }) {
   useEffect(() => {
     const fetchAvailableFilters = async () => {
       try {
+        const TRACK_API = process.env.REACT_APP_TRACK_API;
         const url = playlistId
-          ? `http://localhost:5001/playlists/${playlistId}/filters`
-          : `http://localhost:5001/tracks/filters`;
+          ? `${TRACK_API}/playlists/${playlistId}/filters`
+          : `${TRACK_API}/tracks/filters`;
 
         const res = await fetch(url);
         const data = await res.json();

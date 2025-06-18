@@ -37,7 +37,9 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = () => {
+    const session = localStorage.getItem('session_id');
     localStorage.clear();
+    if (session) localStorage.setItem('session_id', session);
     setAuth({ user: null, role: null, token: null, userId: null });
   };
 

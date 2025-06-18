@@ -4,8 +4,8 @@ import { AuthProvider } from './context/AuthProvider';
 import { RequireAuth } from './component/Authorization/RequireAuth';
 
 // Компоненты
-import { Login } from './component/Authorization/Login';
-import { Register } from './component/Authorization/Register';
+// import { Login } from './component/Authorization/Login';
+// import { Register } from './component/Authorization/Register';
 import { Main } from './component/Layout/Main/Main';
 import { Layout } from './component/Page/Layout';
 import { Profile } from './component/Layout/PersonalAccount/Profile';
@@ -31,18 +31,18 @@ const ROLES = {
 };
 
 function App() {
-  const [guestSessionId, setGuestSessionId] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
 
   // Генерируем session_id при первом заходе
   useEffect(() => {
     const generateSessionId = () => {
-      const storedSessionId = localStorage.getItem('guest_session_id');
+      const storedSessionId = localStorage.getItem('session_id');
       if (storedSessionId) {
-        setGuestSessionId(storedSessionId);
+        setSessionId(storedSessionId);
       } else {
         const newSessionId = uuidv4();
-        localStorage.setItem('guest_session_id', newSessionId);
-        setGuestSessionId(newSessionId);
+        localStorage.setItem('session_id', newSessionId);
+        setSessionId(newSessionId);
       }
     };
 
@@ -56,12 +56,12 @@ function App() {
           {/* Основная часть сайта */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Main />} />
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
+            {/* <Route path="login" element={<Login />} /> */}
+            {/* <Route path="register" element={<Register />} /> */}
             <Route path="playlist/:id" element={<PlaylistPage />} />
 
             {/* Корзина — передаём session_id */}
-            <Route path="/cart" element={<CartPage session_id={guestSessionId} />} />
+            <Route path="/cart" element={<CartPage session_id={sessionId} />} />
 
             {/* Защищённые маршруты для пользователей */}
             <Route element={<RequireAuth allowedRoles={[ROLES.User]} />}>

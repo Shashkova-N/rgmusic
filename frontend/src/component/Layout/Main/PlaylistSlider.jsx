@@ -4,6 +4,8 @@ import { PlaylistCard } from '../../Shared/PlaylistCard/PlaylistCard';
 import { useRef } from 'react';
 import './PlaylistSlider.scss';
 
+const TRACK_API = process.env.REACT_APP_TRACK_API;
+
 export function PlaylistSlider() {
   const [playlists, setPlaylists] = useState([]);
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ export function PlaylistSlider() {
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        const res = await fetch('http://localhost:5001/playlists');
+        const res = await fetch(`${TRACK_API}/playlists`);
         if (!res.ok) {
           const errData = await res.json();
           setError(errData.error || 'Ошибка загрузки плейлистов');

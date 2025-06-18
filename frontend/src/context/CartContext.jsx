@@ -1,3 +1,5 @@
+// src/context/CartContext.jsx
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -5,45 +7,52 @@ const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cartCount, setCartCount] = useState(0);
-  const [ready, setReady] = useState(false);
-
   const CART_API_URL = process.env.REACT_APP_CART_API;
 
   const fetchCartCount = async () => {
-    const userId = localStorage.getItem('user_id');
-    const sessionId = localStorage.getItem('guest_session_id');
+    const userId = localStorage.getItem('userId');
+    const sessionId = localStorage.getItem('session_id');
 
-    if (!userId && !sessionId) {
-      console.warn('Нет user_id и session_id, корзина не загружается');
-      return;
-    }
+    if (!userId && !sessionId) return;
 
     try {
       const response = await axios.get(`${CART_API_URL}/cart/count`, {
-        params: !userId ? { session_id: sessionId } : {},
+        params: userId ? {} : { session_id: sessionId },
         headers: userId ? { 'X-User-ID': userId } : {},
       });
-      setCartCount(response.data.count);
+
+      setCartCount(response.data.count || 0);
     } catch (err) {
-      console.error('Ошибка при получении количества товаров в корзине:', err);
+      console.error('Ошибка получения количества товаров:', err.message);
+      setCartCount(0);
     }
   };
 
+  // Инициализация при монтировании
   useEffect(() => {
     const checkInit = () => {
-      const sessionId = localStorage.getItem('guest_session_id');
-      if (sessionId || localStorage.getItem('user_id')) {
-        setReady(true);
+      const storedSession = localStorage.getItem('session_id');
+      const storedUser = localStorage.getItem('userId');
+      if (storedSession || storedUser) {
+        fetchCartCount();
       } else {
-        setTimeout(checkInit, 100); // ждём появления guest_session_id
+        setTimeout(checkInit, 100);
       }
     };
     checkInit();
   }, []);
 
+  // Обновление при изменении localStorage (логин/логаут)
   useEffect(() => {
-    if (ready) fetchCartCount();
-  }, [ready]);
+    const handleStorageChange = e => {
+      if (e.key === 'session_id' || e.key === 'userId') {
+        fetchCartCount();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return (
     <CartContext.Provider value={{ cartCount, refreshCartCount: fetchCartCount }}>

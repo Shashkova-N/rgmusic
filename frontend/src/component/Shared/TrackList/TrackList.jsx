@@ -17,23 +17,29 @@ export function TrackList({ tracks }) {
 
   const { userId } = useContext(AuthContext);
   const { refreshCartCount } = useCart();
-  const sessionId = localStorage.getItem('guest_session_id');
+  const sessionId = localStorage.getItem('session_id');
 
-  const handleAddToCart = async (track) => {
-    try {
-      const isGuest = !userId || userId === 'null' || userId === '';
-      await cartApi.post(
-        '/cart/add',
-        { track_id: track.id, session_id: isGuest ? sessionId : null },
-        { headers: !isGuest ? { 'X-User-ID': userId } : {} }
-      );
-      await refreshCartCount();
-      alert('Трек добавлен в корзину');
-    } catch (error) {
-      console.error(error);
-      alert('Не удалось добавить трек в корзину');
+const handleAddToCart = async (track) => {
+  try {
+    const isGuest = !userId || userId === 'null' || userId === '';
+    const payload = {
+      track_id: track.id,
+    };
+
+    if (isGuest && sessionId) {
+      payload.session_id = sessionId;
     }
-  };
+
+    // Отправляем как JSON, а не multipart
+    await cartApi.post('/cart/add', payload);
+
+    await refreshCartCount();
+    alert('Трек добавлен в корзину');
+  } catch (error) {
+    console.error('Ошибка при добавлении в корзину:', error);
+    alert('Не удалось добавить трек в корзину');
+  }
+};
 
   useEffect(() => {
     const audio = audioRef.current;

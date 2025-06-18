@@ -53,6 +53,8 @@ services:
       - ./track_service/media:/app/media
   cart_service:
     build: ./cart_service
+    env_file:
+      - .env 
     ports:
       - "5002:5002"
     depends_on:
@@ -60,7 +62,6 @@ services:
     command: sh -c "while ! nc -z cart_db 5432; do sleep 1; done; python app.py"
     volumes:
       - ./cart_service:/app
-      # - ./cart_service/migrations:/app/migrations
   cart_db:
     image: postgres:13
     environment:

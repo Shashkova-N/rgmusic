@@ -3,6 +3,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { TrackList } from '../../Shared/TrackList/TrackList';
 import { TrackFilters } from '../../Shared/TrackFilters/TrackFilters';
 
+const TRACK_API = process.env.REACT_APP_TRACK_API;
+
 export function PlaylistPage() {
   const { id } = useParams();
   const [playlist, setPlaylist] = useState(null);
@@ -29,7 +31,7 @@ export function PlaylistPage() {
   // Загрузка фильтров с сервера
   const loadFilterOptions = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:5001/playlists/${id}/filters`);
+      const res = await fetch(`${TRACK_API}/playlists/${id}/filters`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -74,7 +76,7 @@ export function PlaylistPage() {
 
     try {
       if (pageToLoad === 1) {
-        const resPlaylist = await fetch(`http://localhost:5001/playlists/${id}`);
+        const resPlaylist = await fetch(`${TRACK_API}/playlists/${id}`);
         const dataPlaylist = await resPlaylist.json();
         if (!resPlaylist.ok) {
           setError(dataPlaylist.error || 'Ошибка загрузки плейлиста');
@@ -83,7 +85,7 @@ export function PlaylistPage() {
         setPlaylist(dataPlaylist);
       }
 
-      const resTracks = await fetch(`http://localhost:5001/playlists/${id}/tracks?${queryParams}`);
+      const resTracks = await fetch(`${TRACK_API}/playlists/${id}/tracks?${queryParams}`);
       const dataTracks = await resTracks.json();
 
       if (!resTracks.ok) {

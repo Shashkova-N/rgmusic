@@ -153,3 +153,73 @@
     }
   }
 }
+
+/* Слой-оверлей, чтобы всё заслонить */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; /* поверх всего */
+}
+
+/* Собственно окно модалки */
+.modal-content {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem 1.5rem 1.5rem;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  z-index: 2001; /* чуть выше overlay */
+}
+
+/* Кнопка закрытия */
+.modal-close {
+  position: absolute; top: 8px; right: 8px;
+  background: none; border: none;
+  font-size: 1.2rem; color: #666; cursor: pointer;
+  &:hover { color: #000; }
+}
+
+/* Форма входа/регистрации */
+.login-form {
+  display: flex; flex-direction: column; gap: 1rem;
+  label { font-size: .9rem; color: #333; }
+  input {
+    width: 100%; height: 40px; padding: 0 .75rem;
+    border: none; border-radius: 6px;
+    background: #e6e6e6; font-size: .95rem; color: #333;
+    &::placeholder { color: #999; }
+  }
+
+  &__actions {
+    display: flex; gap: .75rem; margin-top: .5rem;
+    .btn {
+      flex: 1; height: 40px; border: none; border-radius: 20px;
+      font-size: .95rem; font-weight: 500; cursor: pointer;
+      &--primary {
+        background: #1a016c; color: #fff;
+        &:hover { background: #35018b; }
+      }
+      &--secondary {
+        background: #f0f0f0; color: #333;
+        &:hover { background: #e0e0e0; }
+      }
+    }
+  }
+
+  &__footer {
+    margin-top: 1rem; text-align: center;
+    .forgot-link {
+      font-size: .85rem; color: #666; text-decoration: none;
+      &:hover { text-decoration: underline; color: #333; }
+    }
+  }
+}

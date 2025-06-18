@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthProvider';
 import './EditProfile.scss';
 
+const USER_API = process.env.REACT_APP_USER_API;
+
 export function EditProfile() {
   const { userId, token } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -22,9 +24,11 @@ export function EditProfile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/auth/users/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await fetch(
+          `${USER_API}/auth/users/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          });
         const data = await res.json();
 
         if (!res.ok) {
@@ -61,14 +65,16 @@ export function EditProfile() {
     setSuccess('');
 
     try {
-      const res = await fetch(`http://localhost:5000/auth/users/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(form)
-      });
+      const res = await fetch(
+        `${USER_API}/auth/users/${userId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(form)
+        });
       const data = await res.json();
 
       if (!res.ok) {
@@ -88,7 +94,7 @@ export function EditProfile() {
       <h2>Редактировать профиль</h2>
 
       {success && <p className="edit-success">{success}</p>}
-      {error   && <p className="edit-error">{error}</p>}
+      {error && <p className="edit-error">{error}</p>}
 
       <form onSubmit={handleSubmit} className="edit-profile-form">
         <label>
@@ -150,5 +156,5 @@ export function EditProfile() {
         <button type="submit">Сохранить</button>
       </form>
     </div>
-);
+  );
 }

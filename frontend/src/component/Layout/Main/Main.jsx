@@ -6,6 +6,8 @@ import { TrackList } from '../../Shared/TrackList/TrackList';
 
 import '../../../scss/style.scss'
 
+const TRACK_API = process.env.REACT_APP_TRACK_API;
+
 export function Main() {
   const { user, role, signOut } = useContext(AuthContext);
 
@@ -25,6 +27,8 @@ export function Main() {
 
   const limit = 3;
 
+  const [searchVkNumber, setSearchVkNumber] = useState('');
+
   const loadTracks = useCallback(async (page = 1) => {
     let offset = (page - 1) * limit;
     const params = new URLSearchParams();
@@ -40,12 +44,16 @@ export function Main() {
     if (filters.min_price != null) params.append('min_price', filters.min_price);
     if (filters.max_price != null) params.append('max_price', filters.max_price);
 
+    if (searchVkNumber) {
+      params.append('vk_number', searchVkNumber);
+    }
+
     // пагинация
     params.append('limit', limit.toString());
     params.append('offset', offset.toString());
 
     try {
-      const res = await fetch(`http://localhost:5001/tracks?${params.toString()}`);
+      const res = await fetch(`${TRACK_API}/tracks?${params.toString()}`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -69,11 +77,11 @@ export function Main() {
       setTracks([]);
       setTotalPages(1);
     }
-  }, [filters]);
+  }, [filters, searchVkNumber]);
 
   useEffect(() => {
     loadTracks(1);
-  }, [filters, loadTracks]);
+  }, [filters, searchVkNumber, loadTracks]);
 
   const renderPagination = () => {
     const buttons = [];
@@ -83,7 +91,7 @@ export function Main() {
           key={i}
           onClick={() => loadTracks(i)}
           disabled={i === currentPage}
-          style={{ margin: '0 5px', fontWeight: i === currentPage ? 'bold' : 'normal' }}
+          className={`pagination__button ${i === currentPage ? 'pagination__button--active' : ''}`}
         >
           {i}
         </button>
@@ -92,25 +100,61 @@ export function Main() {
     return buttons;
   };
 
+
   return (
     <div className="main__container">
       <PlaylistSlider />
 
+      <div className="track-search">
+        <input
+          type="text"
+          placeholder="Поиск по номеру трека"
+          value={searchVkNumber}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSearchVkNumber(val);
+            if (val) {
+              setFilters({
+                genre: [],
+                tempo: [],
+                voice: [],
+                language: [],
+                duration: [],
+                min_price: null,
+                max_price: null
+              });
+            }
+          }}
+          className="track-search__input"
+        />
+        {searchVkNumber && (
+          <button
+            type="button"
+            className="track-search__clear"
+            onClick={() => setSearchVkNumber('')}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
       <div className="tracks-section">
-        {/* Явный обёртка-блок для списка */}
+
         <div className="tracks-section__list">
           <TrackList tracks={tracks} />
+
+          {/* Пагинация теперь внутри списка */}
+          <div className="pagination">
+            {renderPagination()}
+          </div>
         </div>
 
-        {/* И для фильтров */}
         <div className="tracks-section__filters">
           <TrackFilters filters={filters} setFilters={setFilters} />
         </div>
       </div>
 
-      <div style={{ marginTop: '20px' }}>
-        {renderPagination()}
-      </div>
+
     </div>
   );
 }

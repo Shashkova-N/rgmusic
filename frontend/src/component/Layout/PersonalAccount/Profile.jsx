@@ -10,12 +10,16 @@ export function Profile() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const USER_API = process.env.REACT_APP_USER_API;
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/auth/users/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `${USER_API}/auth/users/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          });
         const data = await res.json();
 
         if (!res.ok) {
