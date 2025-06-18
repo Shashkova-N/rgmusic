@@ -8,7 +8,16 @@ import { useCart } from '../../../context/CartContext';
 
 const API_URL = process.env.REACT_APP_TRACK_API;
 
-export function TrackList({ tracks }) {
+export function TrackList({
+ tracks,
+  actionTitle         = 'В корзину',
+  actionIcon          = 'addtocart',
+  onAction            = null,
+  // новые пропсы для чекбоксов
+  selectable          = false,
+  selectedIds         = [],
+  onSelectionChange   = () => {},
+}) {
   const [currentTrackId, setCurrentTrackId] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -19,27 +28,29 @@ export function TrackList({ tracks }) {
   const { refreshCartCount } = useCart();
   const sessionId = localStorage.getItem('session_id');
 
-const handleAddToCart = async (track) => {
-  try {
-    const isGuest = !userId || userId === 'null' || userId === '';
-    const payload = {
-      track_id: track.id,
-    };
+  const handleAddToCart = async (track) => {
+    try {
+      const isGuest = !userId || userId === 'null' || userId === '';
+      const payload = {
+        track_id: track.id,
+      };
 
-    if (isGuest && sessionId) {
-      payload.session_id = sessionId;
+      if (isGuest && sessionId) {
+        payload.session_id = sessionId;
+      }
+
+      // Отправляем как JSON, а не multipart
+      await cartApi.post('/cart/add', payload);
+
+      await refreshCartCount();
+      alert('Трек добавлен в корзину');
+    } catch (error) {
+      console.error('Ошибка при добавлении в корзину:', error);
+      alert('Не удалось добавить трек в корзину');
     }
+  };
 
-    // Отправляем как JSON, а не multipart
-    await cartApi.post('/cart/add', payload);
-
-    await refreshCartCount();
-    alert('Трек добавлен в корзину');
-  } catch (error) {
-    console.error('Ошибка при добавлении в корзину:', error);
-    alert('Не удалось добавить трек в корзину');
-  }
-};
+  const actionHandler = onAction || handleAddToCart;
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -130,12 +141,42 @@ const handleAddToCart = async (track) => {
   }
 
   return (
-    <div className="track-list">
-      {tracks.map((track) => {
-        const isCurrent = currentTrackId === track.id;
+    <div className={`track-list${selectable ? ' track-list--selectable' : ''}`}>
+      {selectable && (
+        <div className="track-list__header">
+          <label>
+            <input
+              type="checkbox"
+              checked={selectedIds.length === tracks.length}
+              onChange={e => {
+                const all = e.target.checked ? tracks.map(t => t.id) : [];
+                onSelectionChange(all);
+              }}
+            />
+            Выбрать всё ({tracks.length})
+          </label>
+        </div>
+      )}
 
+      {tracks.map(track => {
+        const isCurrent = currentTrackId === track.id;
         return (
           <div className="track-row" key={track.id}>
+            {selectable && (
+              <div className="track-select">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(track.id)}
+                  onChange={e => {
+                    const next = e.target.checked
+                      ? [...selectedIds, track.id]
+                      : selectedIds.filter(id => id !== track.id);
+                    onSelectionChange(next);
+                  }}
+                />
+              </div>
+            )}
+
             {/* Play/Pause */}
             <div className="track-play">
               <button onClick={() => handlePlayPause(track)}>
@@ -166,16 +207,18 @@ const handleAddToCart = async (track) => {
                   max="1"
                   step="0.01"
                   value={volume}
-                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  onChange={e => setVolume(parseFloat(e.target.value))}
                 />
               </div>
             )}
 
-            {/* Duration, Price, Buttons aligned right */}
+            {/* Duration */}
             <div className="track-duration">{formatTime(track.duration)}</div>
+
+            {/* Price */}
             <div className="track-price">{track.price} ₽</div>
 
-            {/* Download & Add to cart */}
+            {/* Download & Action */}
             <div className="track-buttons">
               <button onClick={() => handleDownload(track)} title="Скачать">
                 <img
@@ -186,12 +229,12 @@ const handleAddToCart = async (track) => {
                 />
               </button>
               <button
-                onClick={() => handleAddToCart(track)}
-                title="В корзину"
+                onClick={() => actionHandler(track)}
+                title={actionTitle}
               >
                 <img
-                  src="/icons/addtocart.svg"
-                  alt="В корзину"
+                  src={`/icons/${actionIcon}.svg`}
+                  alt={actionTitle}
                   width={24}
                   height={24}
                 />

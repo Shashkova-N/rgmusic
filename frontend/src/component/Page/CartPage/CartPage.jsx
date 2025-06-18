@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import './CartPage.scss';
+import { TrackList } from '../../Shared/TrackList/TrackList';
 import { cartApi, trackApi } from '../../../api/apiClient';
 import { useCart } from '../../../context/CartContext';
 import { AuthContext } from '../../../context/AuthProvider';
@@ -11,6 +12,8 @@ export function CartPage({ session_id }) {
 
   const { userId } = useContext(AuthContext);
   const { refreshCartCount } = useCart();
+
+  const [selected, setSelected] = useState([]);
 
   // Функция загрузки корзины
   const fetchCart = async () => {
@@ -58,8 +61,21 @@ export function CartPage({ session_id }) {
       console.log('← validTracks', validTracks);
 
       setCartItems(validTracks);
-      const total = validTracks.reduce((sum, t) => sum + parseFloat(t.price || 0), 0);
-      setTotalPrice(total);
+      // setSelected(validTracks.map(t => t.id));
+
+      const allIds = validTracks.map(t => t.id);
+      setSelected(allIds);
+
+      // const total = validTracks.reduce((sum, t) => sum + parseFloat(t.price || 0), 0);
+      // setTotalPrice(total);
+
+      const initialTotal = validTracks.reduce(
+        (sum, t) => sum + parseFloat(t.price || 0),
+        0
+      );
+      setTotalPrice(initialTotal);
+
+
     } catch (e) {
       console.error('✖ Ошибка загрузки корзины:', e.message);
       alert('Не удалось загрузить корзину. Попробуйте перезагрузить страницу.');
@@ -68,6 +84,8 @@ export function CartPage({ session_id }) {
     }
   };
 
+
+
   // Загружаем корзину только при монтировании или изменении session_id / userId
   useEffect(() => {
     if (session_id || userId) {
@@ -75,29 +93,39 @@ export function CartPage({ session_id }) {
     }
   }, [session_id, userId]);
 
-  // Удаление одного элемента
-const handleRemoveFromCart = async (cartItemId) => {
-  if (!window.confirm('Вы действительно хотите удалить этот трек из корзины?')) return;
-
-  try {
-    await cartApi.delete(`/cart/${cartItemId}`);
-    
-    // Обновляем локальное состояние
-    const updated = cartItems.filter(item => item.cart_item_id !== cartItemId);
-    setCartItems(updated);
-
-    // Пересчитываем цену
-    const newTotal = updated.reduce((sum, t) => sum + parseFloat(t.price || 0), 0);
+  // Пересчитываем итоговую цену каждый раз, когда меняются cartItems или selected
+  useEffect(() => {
+    const newTotal = cartItems
+      // учитываем только те треки, id которых есть в selected
+      .filter(track => selected.includes(track.id))
+      // складываем их цены
+      .reduce((sum, track) => sum + parseFloat(track.price || 0), 0);
     setTotalPrice(newTotal);
+  }, [cartItems, selected]);
 
-    // Обновляем счётчик в хэдере
-    await refreshCartCount();
+  // Удаление одного элемента
+  const handleRemoveFromCart = async (cartItemId) => {
+    if (!window.confirm('Вы действительно хотите удалить этот трек из корзины?')) return;
 
-  } catch (error) {
-    console.error('Ошибка при удалении из корзины:', error);
-    alert('Не удалось удалить трек из корзины');
-  }
-};
+    try {
+      await cartApi.delete(`/cart/${cartItemId}`);
+
+      // Обновляем локальное состояние
+      const updated = cartItems.filter(item => item.cart_item_id !== cartItemId);
+      setCartItems(updated);
+
+      // Пересчитываем цену
+      const newTotal = updated.reduce((sum, t) => sum + parseFloat(t.price || 0), 0);
+      setTotalPrice(newTotal);
+
+      // Обновляем счётчик в хэдере
+      await refreshCartCount();
+
+    } catch (error) {
+      console.error('Ошибка при удалении из корзины:', error);
+      alert('Не удалось удалить трек из корзины');
+    }
+  };
 
   // Очистка всей корзины
   const handleClearCart = async () => {
@@ -129,46 +157,54 @@ const handleRemoveFromCart = async (cartItemId) => {
       {cartItems.length === 0 ? (
         <p>Ваша корзина пуста</p>
       ) : (
-        <>
-          <table className="cart-page__table">
-            <thead>
-              <tr>
-                <th>Название</th>
-                <th>Цена</th>
-                <th>Длительность</th>
-                <th>Действия</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cartItems.map(track => (
-                <tr key={track.cart_item_id}>
-                  <td>{track.vk_number}</td>
-                  <td>{track.price} ₽</td>
-                  <td>{track.duration || '—'} сек</td>
-                  <td>
-                    <button
-                      className="cart-page__remove-btn"
-                      onClick={() => handleRemoveFromCart(track.cart_item_id)}
-                    >
-                      Удалить
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="cart-page__body">
+          {/* Левая колонка — список треков и очистка */}
+          <div className="cart-page__tracks">
+            <TrackList
+              tracks={cartItems}
+              selectable
+              selectedIds={selected}
+              onSelectionChange={setSelected}
+              actionTitle="Удалить из корзины"
+              actionIcon="delete"
+              onAction={track => handleRemoveFromCart(track.cart_item_id)}
+            />
 
-          <div className="cart-page__summary">
-            <strong>Итого: {totalPrice.toFixed(2)} ₽</strong>
+            <button
+              className="cart-page__clear-btn"
+              onClick={handleClearCart}
+            >
+              Очистить корзину
+            </button>
           </div>
 
-          <button
-            className="cart-page__clear-btn"
-            onClick={handleClearCart}
-          >
-            Очистить корзину
-          </button>
-        </>
+          {/* Правая колонка — панель «Итого» */}
+          <div className="cart-page__summary-box">
+            <div className="cart-summary__title">Итого</div>
+            <div className="cart-summary__divider" />
+
+            <div className="cart-summary__row">
+              <span>Трек</span>
+              <span>{selected.length} шт.</span>
+            </div>
+
+            <div className="cart-summary__row">
+              <span>К оплате</span>
+              <span className="cart-summary__amount">
+                {totalPrice.toFixed(2)} ₽
+              </span>
+            </div>
+
+            <button
+              className="cart-summary__button"
+              onClick={() => {
+                /* Ваша логика оплаты */
+              }}
+            >
+              Оплатить
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
