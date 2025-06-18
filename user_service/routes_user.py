@@ -46,6 +46,11 @@ def login():
 
     return jsonify({'error':'Неверный email или пароль'}), 401
 
+@user_bp.route('/users/<int:user_id>', methods=['OPTIONS'])
+def users_options(user_id):
+    # просто отвечаем 200 на preflight
+    return '', 200
+
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
 @jwt_required()
 def get_user(user_id):

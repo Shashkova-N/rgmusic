@@ -19,7 +19,8 @@
       background-color: #f5f5f5;
     }
 
-    th, td {
+    th,
+    td {
       padding: 0.75rem;
       border-bottom: 1px solid #ddd;
       text-align: left;
@@ -86,7 +87,7 @@
   background-color: #f7f7f7;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -102,7 +103,8 @@
 .cart-summary__divider {
   height: 1px;
   background-color: #d0d0d0;
-  margin: 0 -20px; /* растянуть divider на всю ширину панели */
+  margin: 0 -20px;
+  /* растянуть divider на всю ширину панели */
 }
 
 /* Обычная строка в summary */
@@ -131,6 +133,104 @@
   cursor: pointer;
   transition: opacity 0.2s;
 }
+
 .cart-summary__button:hover {
   opacity: 0.85;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-window {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  position: relative;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: #1a016c;
+  }
+
+  .error {
+    color: #e00;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #333;
+
+    input,
+    select {
+      width: 100%;
+      height: 40px;
+      padding: 0 0.75rem;
+      margin-top: 0.25rem;
+      border: none;
+      border-radius: 6px;
+      background: #e6e6e6;
+      font-size: 0.95rem;
+      color: #333;
+      outline: none;
+
+      &::placeholder {
+        color: #999;
+      }
+    }
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    button {
+      flex: 1;
+      height: 40px;
+      border: none;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+
+      &:first-child {
+        background: #1a016c;
+        color: #fff;
+
+        &:hover {
+          background: #35018b;
+        }
+      }
+
+      &:last-child {
+        background: #f0f0f0;
+        color: #333;
+
+        &:hover {
+          background: #e0e0e0;
+        }
+      }
+    }
+  }
 }

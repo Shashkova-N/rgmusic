@@ -20,22 +20,25 @@ def get_purchases(user_id):
     } for p in lst]), 200
 
 @pur_bp.route('', methods=['POST'])
-@jwt_required()
 def add_purchase(user_id):
-    if get_jwt_identity() != str(user_id):
-        return jsonify({'error': 'Forbidden'}), 403
-    data = request.get_json()
-    try:
-        p = Purchase(
-            user_id=user_id,
-            email=data['email'],
-            country=data['country'],
-            region=data['region'],
-            track_id=data['track_id'],
-            price=data['price']
-        )
-        db.session.add(p)
-        db.session.commit()
-        return jsonify({'message': 'Покупка добавлена', 'purchase_id': p.id}), 201
-    except KeyError:
+    # user_id == 0 будет означать гостя
+    data = request.get_json() or {}
+    # Проверяем необходимые поля
+    required = ['email', 'country', 'region', 'track_id', 'price']
+    if not all(field in data for field in required):
         return jsonify({'error': 'Неполные данные'}), 400
+
+    # Для гостя сохраняем user_id None
+    uid = None if user_id == 0 else user_id
+
+    p = Purchase(
+        user_id=uid,
+        email=data['email'],
+        country=data['country'],
+        region=data['region'],
+        track_id=data['track_id'],
+        price=data['price']
+    )
+    db.session.add(p)
+    db.session.commit()
+    return jsonify({'message': 'Покупка добавлена', 'purchase_id': p.id}), 201
