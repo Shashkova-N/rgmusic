@@ -49,6 +49,7 @@ frontend_old/
 media/
 track_service/media/clean/
 track_service/media/watermarked/
+.docker-compose.yml
 
 ####################
 # Прочие ненужные файлы
@@ -57,3 +58,7 @@ coverage/
 temp/
 tmp/
 .cache
+
+user_service_data/
+cart_service_data/
+track_service_data/

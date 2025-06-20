@@ -1,0 +1,26 @@
+.service-page {
+  padding: 2rem 1rem;
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .service-item {
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin: 0.25rem 0;
+    }
+  }
+
+  a {
+    color: #0077cc;
+    text-decoration: underline;
+  }
+}

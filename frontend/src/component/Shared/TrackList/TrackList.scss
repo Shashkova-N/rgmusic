@@ -4,12 +4,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px;
-}
-
-/* модификатор для списка с чекбоксами */
-.track-list--selectable {
-  /* здесь при желании можно переопределить что-то глобально */
+  // padding: 12px;
 }
 
 /* Заголовок с “Выбрать всё” */
@@ -81,7 +76,8 @@
 
 /* Номер трека */
 .track-vk {
-  flex: 0 0 100px;
+  display: flex;
+  align-items: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -94,6 +90,7 @@
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
+  margin-left: 8px;
 }
 .track-volume-controls img {
   display: block;
@@ -151,17 +148,17 @@
 
 /* Контролы прогресса — без чекбокса */
 .track-progress-controls {
-  position: absolute;
-  top: 32px;
-  left: calc(
-    16px   /* padding-left */
-    + 40px /* ширина кнопки Play */
-    + 16px /* gap */
-  );
-  right: calc(
-    16px   /* padding-right */
-    + 50px /* ширина .track-duration */
-  );
+  position: relative;
+  // top: 32px;
+  // left: calc(
+  //   16px   /* padding-left */
+  //   + 40px /* ширина кнопки Play */
+  //   + 16px /* gap */
+  // );
+  // right: calc(
+  //   16px   /* padding-right */
+  //   + 50px /* ширина .track-duration */
+  // );
   height: 4px;
   background-color: #ccc;
   border-radius: 2px;
@@ -177,6 +174,40 @@
     + 40px /* ширина кнопки Play */
     + 16px /* gap */
   );
+}
+
+.track-progress-controls .track-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #2e0f83;
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
+.track-info {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.track-info-header {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.track-progress-controls {
+  position: relative;
+  margin-top: 4px;
+  height: 4px;
+  background-color: #ccc;
+  border-radius: 2px;
+  cursor: pointer;
+  overflow: hidden;
 }
 
 .track-progress-controls .track-progress-bar {

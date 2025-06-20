@@ -7,6 +7,8 @@ import hashlib
 import base64
 import re
 
+from mail.mail_service import send_email
+
 from flask import Blueprint, request, jsonify, current_app, abort
 from yookassa import Payment
 from models import db, Order, OrderItem, Cart, CartItem
@@ -84,7 +86,7 @@ def checkout():
         },
         "confirmation": {
             "type": "redirect",
-            "return_url": current_app.config.get('FRONTEND_URL') + "/cart/return"
+            "return_url": current_app.config.get('FRONTEND_URL')
         },
         "capture": True,
         "description": f"Оплата заказа №{order.id}",
@@ -101,6 +103,7 @@ def payment_checkout_options():
 
 @payment_bp.route('/webhook', methods=['POST'])
 def webhook():
+    print("🚨 Вызван webhook!")
     # читаем тело и заголовок подписи
     raw_bytes = request.get_data()
     raw_body = raw_bytes.decode('utf-8', errors='replace')
@@ -195,6 +198,17 @@ def webhook():
             current_app.logger.error(
                 f"Unexpected error recording purchase for track {item.track_id}: {e}"
             )
+    
+    # Подготавливаем и отправляем email
+    track_links = []
+    for item in order.items:
+        track_link = f"{current_app.config['TRACK_SERVICE_URL']}/tracks/{item.track_id}/download"
+        track_links.append(track_link)
+
+    body = "Спасибо за покупку! Ссылки для скачивания ваших треков:\n"
+    body += "\n".join(track_links)
+
+    send_email(order.email, "Ваши треки готовы к скачиванию", body)
 
     # 4) Очищаем корзину
     if order.user_id:

@@ -140,113 +140,74 @@ export function TrackList({
     return <p>Нет треков для отображения</p>;
   }
 
-  return (
-    <div className={`track-list${selectable ? ' track-list--selectable' : ''}`}>
-      {selectable && (
-        <div className="track-list__header">
-          <label>
-            <input
-              type="checkbox"
-              checked={selectedIds.length === tracks.length}
-              onChange={e => {
-                const all = e.target.checked ? tracks.map(t => t.id) : [];
-                onSelectionChange(all);
-              }}
-            />
-            Выбрать всё ({tracks.length})
-          </label>
-        </div>
-      )}
+return (
+  <div className={`track-list${selectable ? ' track-list--selectable' : ''}`}>
+    {selectable && (
+      <div className="track-list__header">
+        <label>
+          <input
+            type="checkbox"
+            checked={selectedIds.length === tracks.length}
+            onChange={e => {
+              const all = e.target.checked ? tracks.map(t => t.id) : [];
+              onSelectionChange(all);
+            }}
+          />
+          Выбрать всё ({tracks.length})
+        </label>
+      </div>
+    )}
 
-      {tracks.map(track => {
-        const isCurrent = currentTrackId === track.id;
-        return (
-          <div className="track-row" key={track.id}>
-            {selectable && (
-              <div className="track-select">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.includes(track.id)}
-                  onChange={e => {
-                    const next = e.target.checked
-                      ? [...selectedIds, track.id]
-                      : selectedIds.filter(id => id !== track.id);
-                    onSelectionChange(next);
-                  }}
-                />
-              </div>
-            )}
+    {tracks.map(track => {
+      const isCurrent = currentTrackId === track.id;
+      return (
+        <div className="track-row" key={track.id}>
+          {selectable && (
+            <div className="track-select">
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(track.id)}
+                onChange={e => {
+                  const next = e.target.checked
+                    ? [...selectedIds, track.id]
+                    : selectedIds.filter(id => id !== track.id);
+                  onSelectionChange(next);
+                }}
+              />
+            </div>
+          )}
 
-            {/* Play/Pause */}
-            <div className="track-play">
-              <button onClick={() => handlePlayPause(track)}>
-                <img
-                  src={`/icons/${isCurrent && isPlaying ? 'pause' : 'play'}.svg`}
-                  alt={isCurrent && isPlaying ? 'Pause' : 'Play'}
-                  width={16}
-                  height={16}
-                />
-              </button>
+          <div className="track-play">
+            <button onClick={() => handlePlayPause(track)}>
+              <img
+                src={`/icons/${isCurrent && isPlaying ? 'pause' : 'play'}.svg`}
+                alt={isCurrent && isPlaying ? 'Pause' : 'Play'}
+                width={16}
+                height={16}
+              />
+            </button>
+          </div>
+
+          <div className="track-info">
+            <div className="track-info-header">
+              <div className="track-vk">{track.vk_number}</div>
+              {isCurrent && (
+                <div className="track-volume-controls">
+                  <img src="/icons/volume.svg" alt="Volume" width={16} height={16} />
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={e => setVolume(parseFloat(e.target.value))}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Track number */}
-            <div className="track-vk">{track.vk_number}</div>
-
-            {/* Volume controls */}
             {isCurrent && (
-              <div className="track-volume-controls">
-                <img
-                  src="/icons/volume.svg"
-                  alt="Volume"
-                  width={16}
-                  height={16}
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={e => setVolume(parseFloat(e.target.value))}
-                />
-              </div>
-            )}
-
-            {/* Duration */}
-            <div className="track-duration">{formatTime(track.duration)}</div>
-
-            {/* Price */}
-            <div className="track-price">{track.price} ₽</div>
-
-            {/* Download & Action */}
-            <div className="track-buttons">
-              <button onClick={() => handleDownload(track)} title="Скачать">
-                <img
-                  src="/icons/download.svg"
-                  alt="Скачать"
-                  width={24}
-                  height={24}
-                />
-              </button>
-              <button
-                onClick={() => actionHandler(track)}
-                title={actionTitle}
-              >
-                <img
-                  src={`/icons/${actionIcon}.svg`}
-                  alt={actionTitle}
-                  width={24}
-                  height={24}
-                />
-              </button>
-            </div>
-
-            {/* Progress bar */}
-            {isCurrent && (
-              <div
-                className="track-progress-controls"
-                onClick={handleProgressClick}
-              >
+              <div className="track-progress-controls" onClick={handleProgressClick}>
                 <div
                   className="track-progress-bar"
                   style={{ width: `${progress * 100}%` }}
@@ -254,8 +215,26 @@ export function TrackList({
               </div>
             )}
           </div>
-        );
-      })}
-    </div>
-  );
+
+          <div className="track-duration">{formatTime(track.duration)}</div>
+          <div className="track-price">{track.price} ₽</div>
+
+          <div className="track-buttons">
+            <button onClick={() => handleDownload(track)} title="Скачать">
+              <img src="/icons/download.svg" alt="Скачать" width={24} height={24} />
+            </button>
+            <button onClick={() => actionHandler(track)} title={actionTitle}>
+              <img
+                src={`/icons/${actionIcon}.svg`}
+                alt={actionTitle}
+                width={24}
+                height={24}
+              />
+            </button>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+);
 }

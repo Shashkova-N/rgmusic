@@ -16,7 +16,7 @@ def create_app():
     # Настройка CORS: разрешаем необходимые заголовки (включая X-User-ID для межсервисных запросов)
     CORS(
         app,
-        resources={r"/*": {"origins": Config.CORS_ORIGINS}},
+        resources={r"/*": {"origins": Config.FRONTEND_URL}},
         supports_credentials=True,
         allow_headers=[
             "Content-Type",
@@ -30,6 +30,9 @@ def create_app():
     # Инициализация БД и миграций
     db.init_app(app)
     Migrate(app, db)
+
+    with app.app_context():
+        db.create_all()
 
     # Инициализация JWT и bcrypt
     init_extensions(app)

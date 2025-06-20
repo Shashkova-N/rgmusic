@@ -19,6 +19,7 @@ import { EditTrackPage } from './component/Admin/Pages/EditTrack/EditTrackPage';
 import { PriceUpdate } from './component/Admin/Pages/PriceUpdate/PriceUpdate';
 import { PlaylistsPage } from './component/Admin/Pages/PlaylistsPage/PlaylistsPage';
 import { AddPlaylist } from './component/Admin/Pages/AddPlaylist/AddPlaylist';
+import { ServicePage } from './component/Page/ServicePage/ServicePage';
 
 import './scss/style.scss';
 
@@ -83,6 +84,9 @@ function App() {
                 </Route>
               </Route>
             </Route>
+
+            {/* Просто страницы */}
+            <Route path="/services" element={<ServicePage />} />
 
             <Route path="*" element={<h2>Страница не найдена</h2>} />
           </Route>

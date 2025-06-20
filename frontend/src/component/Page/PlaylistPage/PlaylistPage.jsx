@@ -3,6 +3,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { TrackList } from '../../Shared/TrackList/TrackList';
 import { TrackFilters } from '../../Shared/TrackFilters/TrackFilters';
 
+import '../../../scss/style.scss'
+
 const TRACK_API = process.env.REACT_APP_TRACK_API;
 
 export function PlaylistPage() {
@@ -49,12 +51,18 @@ export function PlaylistPage() {
       });
 
       // Инициализируем фильтры пустыми значениями (или по желанию, можно с дефолтами)
-      setFilters({
+      const initialFilters = {
         genre: '',
         tempo: '',
         voice: '',
         language: '',
-        // Если хочешь, можно сразу min_price и max_price сюда включить, если фильтр цены есть в TrackFilters
+      };
+
+      setFilters((prev) => {
+        const isSame = Object.entries(initialFilters).every(
+          ([key, val]) => prev[key] === val
+        );
+        return isSame ? prev : initialFilters;
       });
 
       setError('');
@@ -71,7 +79,7 @@ export function PlaylistPage() {
     const queryParams = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
-      ...Object.fromEntries(Object.entries(filters).filter(([k,v]) => v))
+      ...Object.fromEntries(Object.entries(filters).filter(([k, v]) => v))
     });
 
     try {
@@ -141,21 +149,46 @@ export function PlaylistPage() {
   };
 
   return (
-    <div>
-      <h2>{playlist.name}</h2>
-      <p>{playlist.description}</p>
+    <div className="main__container">
+      <div className="playlist-header">
+        <img
+          src={`${TRACK_API}/playlists/media/covers/${playlist.cover_image}`}
+          alt="Обложка плейлиста"
+          className="playlist-header__cover"
+        />
 
-      <TrackFilters
-        playlistId={id}
-        filters={filters}
-        setFilters={setFilters}
-        filterOptions={filterOptions} // передаём доступные опции
-      />
+        <div className="playlist-header__info">
+          <h2 className="playlist-header__title">{playlist.name}</h2>
 
-      <TrackList tracks={tracks} />
+          <div className="playlist-header__meta">
+            треков в альбоме: <span>{playlist.track_count}</span> · просмотров: <span>{playlist.views}</span>
+          </div>
 
-      <div style={{ marginTop: '20px' }}>
-        {renderPagination()}
+          <p className="playlist-header__description">{playlist.description}</p>
+        </div>
+      </div>
+
+      <div className="tracks-section">
+
+        <div className="tracks-section__list">
+          <TrackList tracks={tracks} />
+
+          {/* Пагинация теперь внутри списка */}
+          {totalPages > 1 && (
+            <div className="pagination">
+              {renderPagination()}
+            </div>
+          )}
+        </div>
+
+        <div className="tracks-section__filters">
+          <TrackFilters
+            playlistId={id}
+            filters={filters}
+            setFilters={setFilters}
+            filterOptions={filterOptions} // передаём доступные опции
+          />
+        </div>
       </div>
     </div>
   );

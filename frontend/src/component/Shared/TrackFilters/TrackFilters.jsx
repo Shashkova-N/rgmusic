@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import Slider from 'rc-slider';
+import React from 'react';
 import 'rc-slider/assets/index.css';
 import './TrackFilters.scss';
 
-export function TrackFilters({ playlistId, filters, setFilters }) {
+function TrackFiltersComponent({ playlistId, filters, setFilters }) {
   const [available, setAvailable] = useState({
     genres: [],
     tempos: [],
@@ -24,10 +25,10 @@ export function TrackFilters({ playlistId, filters, setFilters }) {
     });
   };
 
-  const priceRange = [
-    available.min_price ?? 0,
-    available.max_price ?? 3000
-  ];
+  // const priceRange = [
+  //   available.min_price ?? 0,
+  //   available.max_price ?? 3000
+  // ];
 
   const availableDurations = available.durations || [];
 
@@ -64,9 +65,12 @@ export function TrackFilters({ playlistId, filters, setFilters }) {
 
   useEffect(() => {
     if (shouldHideLanguage && filters.language.length > 0) {
-      setFilters((prev) => ({ ...prev, language: [] }));
+      setFilters((prev) => {
+        if (prev.language.length === 0) return prev;
+        return { ...prev, language: [] };
+      });
     }
-  }, [filters.voice]);
+  }, [filters.voice, filters.language.length, setFilters, shouldHideLanguage]);
 
   const handleCheckbox = (e) => {
     const { name, value, checked } = e.target;
@@ -85,13 +89,13 @@ export function TrackFilters({ playlistId, filters, setFilters }) {
     }));
   };
 
-  const handleSliderChange = (name, [min, max]) => {
-    setFilters((prev) => ({
-      ...prev,
-      [`min_${name}`]: min,
-      [`max_${name}`]: max
-    }));
-  };
+  // const handleSliderChange = (name, [min, max]) => {
+  //   setFilters((prev) => ({
+  //     ...prev,
+  //     [`min_${name}`]: min,
+  //     [`max_${name}`]: max
+  //   }));
+  // };
 
   function formatDuration(seconds) {
     const min = Math.floor(seconds / 60);
@@ -101,8 +105,8 @@ export function TrackFilters({ playlistId, filters, setFilters }) {
 
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
-  console.log('filters.voice:', filters.voice);
-  console.log('shouldHideLanguage:', shouldHideLanguage);
+  // console.log('filters.voice:', filters.voice);
+  // console.log('shouldHideLanguage:', shouldHideLanguage);
 
   return (
     <div className="track-filters">
@@ -199,13 +203,17 @@ export function TrackFilters({ playlistId, filters, setFilters }) {
             filters.min_price ?? available.min_price ?? 0,
             filters.max_price ?? available.max_price ?? 3000
           ]}
-          onChange={(val) =>
-            setFilters((prev) => ({
-              ...prev,
-              min_price: val[0],
-              max_price: val[1]
-            }))
-          }
+          onChange={(val) => {
+            setFilters((prev) => {
+              if (prev.min_price === val[0] && prev.max_price === val[1]) return prev;
+              return {
+                ...prev,
+                min_price: val[0],
+                max_price: val[1]
+              };
+            });
+          }}
+
         />
       </div>
 
@@ -257,3 +265,5 @@ export function TrackFilters({ playlistId, filters, setFilters }) {
     </div>
   );
 }
+
+export const TrackFilters = React.memo(TrackFiltersComponent);
