@@ -12,7 +12,13 @@ export function Layout() {
     <div className="app-wrapper">
       {!isAdmin && <Header />}
       <main className="main-content">
-        <Outlet />
+        {!isAdmin ? (
+          <div className="container">
+            <Outlet />
+          </div>
+        ) : (
+          <Outlet />
+        )}
       </main>
       {!isAdmin && <Footer />}
     </div>

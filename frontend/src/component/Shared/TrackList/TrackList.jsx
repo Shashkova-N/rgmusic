@@ -116,16 +116,34 @@ export function TrackList({
       (offsetX / rect.width) * audioRef.current.duration;
   };
 
-  const handleDownload = (track) => {
-    const src = getFileUrl(track);
-    if (!src) return;
+const handleDownload = async (track) => {
+  const src = getFileUrl(track);
+  if (!src) return;
+
+  try {
+    // 1) фетчим файл в виде blob
+    const res = await fetch(src, {
+      // если требуется авторизация, можно добавить credentials: 'include'
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const blob = await res.blob();
+
+    // 2) создаём временный URL и кликаем по нему
+    const blobUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = src;
+    link.href = blobUrl;
     link.download = `${track.title || 'track'}.mp3`;
     document.body.appendChild(link);
     link.click();
     link.remove();
-  };
+
+    // 3) чистим за собой
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    console.error('Ошибка при скачивании трека:', err);
+    alert('Не удалось скачать трек');
+  }
+};
 
   const formatTime = (sec) => {
     if (isNaN(sec)) return '0:00';

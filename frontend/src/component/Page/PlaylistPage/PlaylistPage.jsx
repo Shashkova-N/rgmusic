@@ -12,6 +12,8 @@ export function PlaylistPage() {
   const [playlist, setPlaylist] = useState(null);
   const [error, setError] = useState('');
 
+  const [showFilters, setShowFilters] = useState(false);
+
   // filters и setFilters изначально пусты — потом загрузим их с сервера
   const [filters, setFilters] = useState({});
 
@@ -149,7 +151,7 @@ export function PlaylistPage() {
   };
 
   return (
-    <div className="main__container">
+    <>
       <div className="playlist-header">
         <img
           src={`${TRACK_API}/playlists/media/covers/${playlist.cover_image}`}
@@ -158,10 +160,13 @@ export function PlaylistPage() {
         />
 
         <div className="playlist-header__info">
-          <h2 className="playlist-header__title">{playlist.name}</h2>
+          <div className="playlist-header__top">
+            <h2 className="playlist-header__title">{playlist.name}</h2>
 
-          <div className="playlist-header__meta">
-            треков в альбоме: <span>{playlist.track_count}</span> · просмотров: <span>{playlist.views}</span>
+            <div className="playlist-header__meta">
+              <div>треков в альбоме: <span>{playlist.track_count}</span></div>
+              <div>просмотров: <span>{playlist.views}</span></div>
+            </div>
           </div>
 
           <p className="playlist-header__description">{playlist.description}</p>
@@ -190,6 +195,6 @@ export function PlaylistPage() {
           />
         </div>
       </div>
-    </div>
+    </>
   );
 }

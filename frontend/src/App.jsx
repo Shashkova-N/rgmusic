@@ -3,9 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthProvider';
 import { RequireAuth } from './component/Authorization/RequireAuth';
 
-// Компоненты
-// import { Login } from './component/Authorization/Login';
-// import { Register } from './component/Authorization/Register';
 import { Main } from './component/Layout/Main/Main';
 import { Layout } from './component/Page/Layout';
 import { Profile } from './component/Layout/PersonalAccount/Profile';
@@ -19,9 +16,9 @@ import { EditTrackPage } from './component/Admin/Pages/EditTrack/EditTrackPage';
 import { PriceUpdate } from './component/Admin/Pages/PriceUpdate/PriceUpdate';
 import { PlaylistsPage } from './component/Admin/Pages/PlaylistsPage/PlaylistsPage';
 import { AddPlaylist } from './component/Admin/Pages/AddPlaylist/AddPlaylist';
-import { ServicePage } from './component/Page/ServicePage/ServicePage';
 
-import './scss/style.scss';
+import { ServicePage } from './component/Page/ServicePage/ServicePage';
+import { ContactsPage } from './component/Page/ContactsPage/ContactsPage';
 
 // Импортируем uuid для session_id
 import { v4 as uuidv4 } from 'uuid';
@@ -57,8 +54,7 @@ function App() {
           {/* Основная часть сайта */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Main />} />
-            {/* <Route path="login" element={<Login />} /> */}
-            {/* <Route path="register" element={<Register />} /> */}
+
             <Route path="playlist/:id" element={<PlaylistPage />} />
 
             {/* Корзина — передаём session_id */}
@@ -87,6 +83,7 @@ function App() {
 
             {/* Просто страницы */}
             <Route path="/services" element={<ServicePage />} />
+            <Route path="/contacts" element={<ContactsPage />} />
 
             <Route path="*" element={<h2>Страница не найдена</h2>} />
           </Route>

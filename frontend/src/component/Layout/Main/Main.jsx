@@ -102,7 +102,7 @@ export function Main() {
 
 
   return (
-    <div className="main__container">
+    <>
       <PlaylistSlider />
 
       <div className="track-search">
@@ -153,8 +153,6 @@ export function Main() {
           <TrackFilters filters={filters} setFilters={setFilters} />
         </div>
       </div>
-
-
-    </div>
+    </>
   );
 }

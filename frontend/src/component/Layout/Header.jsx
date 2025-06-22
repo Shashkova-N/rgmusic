@@ -70,7 +70,7 @@ export function Header() {
 
           <div className="header__links">
             <Link to="/services" className="header__link">Услуги</Link>
-            <Link to="/offer" className="header__link">Оферта</Link>
+            {/* <Link to="/offer" className="header__link">Оферта</Link> */}
             <Link to="/contacts" className="header__link">Контакты</Link>
             <Link to="/performances" className="header__link">Выступления</Link>
           </div>

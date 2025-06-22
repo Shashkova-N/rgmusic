@@ -120,7 +120,9 @@
 
 /* Цена */
 .track-price {
-  width: 70px;
+  // width: 70px;
+  max-width: 42px;
+  width: 100%;
   text-align: right;
   white-space: nowrap;
 }
@@ -166,15 +168,15 @@
   overflow: hidden;
 }
 
-/* Контролы прогресса — с чекбоксом */
-.track-list--selectable .track-progress-controls {
-  left: calc(
-    16px   /* padding-left */
-    + 32px /* ширина чекбокса */
-    + 40px /* ширина кнопки Play */
-    + 16px /* gap */
-  );
-}
+// /* Контролы прогресса — с чекбоксом */
+// .track-list--selectable .track-progress-controls {
+//   left: calc(
+//     16px   /* padding-left */
+//     + 32px /* ширина чекбокса */
+//     + 40px /* ширина кнопки Play */
+//     + 16px /* gap */
+//   );
+// }
 
 .track-progress-controls .track-progress-bar {
   position: absolute;
@@ -218,4 +220,170 @@
   background-color: #2e0f83;
   width: 0%;
   transition: width 0.2s ease;
+}
+
+
+// @media (max-width: 800px) {
+  /* header */
+  // .header__container {
+  //   height: auto;
+  //   flex-direction: column;
+  //   gap: 10px;
+  //   padding: 10px;
+  // }
+
+  // /* main */
+  // .main__container {
+  //   padding: 0;
+  // }
+  // .tracks-section {
+  //   flex-direction: column-reverse;
+  //   align-items: center;
+  // }
+  // /* cart-page */
+  // .cart-page__body {
+  //   align-items: center;
+  //   flex-direction: column;
+  // }
+//   .track-price {
+//     max-width: 42px;
+//     width: 100%;
+//   }
+// }
+
+@media (max-width: 600px) {
+  /* header */
+  // .header__links {
+  //   gap: 10px;
+  // }
+  // .header__icon-img {
+  //   height: 35px;
+  //   width: 35px;
+  // }
+  // .header__badge {
+  //   border: 2px solid #fff;
+  //   font-size: 11px;
+  // }
+
+  /* main */
+  .track-volume-controls {
+    position: relative;
+    margin: 0 6px;
+  }
+  .track-volume-controls input[type="range"] {
+    width: 57px;
+    position: absolute;
+    top: -11px;
+    left: 2px;
+    transform: rotate(270deg);
+  }
+}
+
+@media (max-width: 500px) {
+  /* main */
+  .track-list {
+    gap: 10px;
+    padding: 0;
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .track-row {
+    font-size: 14px;
+    gap: 10px;
+    padding: 10px;
+  }
+  .track-play button img {
+    height: 35px;
+    width: 35px;
+  }
+  .track-buttons button img {
+    height: 27px;
+    width: 27px;
+  }
+  .track-buttons {
+    gap: 10px;
+  }
+  // /* cart-page */
+  // .cart-page {
+  //   padding: 15px;
+  // }
+  // .cart-page__body {
+  //   align-items: center;
+  // }
+}
+@media (max-width: 400px) {
+  /* main */
+  .track-list {
+    max-width: 350px;
+    width: 100%;
+  }
+  .track-row {
+    gap: 10px;
+    padding: 5px;
+  }
+  .track-buttons {
+    gap: 0px;
+  }
+  /* cart-page */
+  // .cart-page {
+  //   padding: 0зч;
+  // }
+  // .cart-page__body {
+  //   align-items: center;
+  // }
+  // .cart-page__summary-box {
+  //   width: 300px;
+  // }
+  // .cart-page__body .track-list {
+  //   max-width: 318px;
+  //   width: 100%;
+  // }
+}
+@media (max-width: 350px) {
+  /* header */
+  // .header__links {
+  //   flex-direction: column;
+  //   align-items: center;
+  // }
+  /* main */
+  // .track-filters {
+  //   padding: 15px;
+  //   width: 300px;
+  // }
+  // .tracks-section__filters {
+  //   font-size: 13px;
+  // }
+  // .track-filters .filter-group label {
+  //   font-size: 13px;
+  // }
+
+  .track-list {
+    max-width: 300px;
+    width: 100%;
+  }
+  .track-row {
+    font-size: 13px;
+    gap: 10px;
+    padding: 5px;
+  }
+  .track-play button img {
+    height: 30px;
+    width: 30px;
+  }
+  .track-info {
+    width: 55%;
+  }
+  .track-volume-controls input[type="range"] {
+    height: 3px;
+    left: -5px;
+  }
+  .track-volume-controls img {
+    height: 20px;
+    width: 20px;
+  }
+  .track-buttons button img {
+    height: 24px;
+    width: 24px;
+  }
 }

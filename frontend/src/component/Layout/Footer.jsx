@@ -26,7 +26,7 @@ export function Footer() {
         <div className="footer__links">
           <a href="/contacts">Контакты</a>
           <a href="/sitemap">Карта сайта</a>
-          <a href="/terms">Пользовательское соглашение</a>
+          {/* <a href="/terms">Пользовательское соглашение</a> */}
           <a href="/privacy">Согласие на обработку персональных данных</a>
         </div>
         <div className="footer__copyright">
